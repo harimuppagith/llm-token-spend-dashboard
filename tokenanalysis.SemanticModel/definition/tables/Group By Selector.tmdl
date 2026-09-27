@@ -1,0 +1,51 @@
+table 'Group By Selector'
+	lineageTag: 4ddcae31-7ed7-4445-871a-53099c3c2ecb
+
+	column 'Group By Selector'
+		lineageTag: 89d7ad14-910c-4dea-aa15-707aea30f79e
+		summarizeBy: none
+		sourceColumn: [Value1]
+		sortByColumn: 'Group By Selector Order'
+
+		relatedColumnDetails
+			groupByColumn: 'Group By Selector Fields'
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Group By Selector Fields'
+		isHidden
+		lineageTag: facb500c-2cc7-41a7-a89c-2b5fad178e2b
+		summarizeBy: none
+		sourceColumn: [Value2]
+		sortByColumn: 'Group By Selector Order'
+
+		extendedProperty ParameterMetadata =
+				{
+				  "version": 3,
+				  "kind": 2
+				}
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Group By Selector Order'
+		isHidden
+		formatString: 0
+		lineageTag: b6d42e3b-dde8-4da3-a3cb-32172d7e33c5
+		summarizeBy: sum
+		sourceColumn: [Value3]
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'Group By Selector' = calculated
+		mode: import
+		source =
+				{
+				    ("Division", NAMEOF('DimDivision'[Division]), 0),
+				    ("Application", NAMEOF('DimApplication'[Application]), 1),
+				    ("Publisher", NAMEOF('DimPublisher'[Publisher]), 2),
+				    ("Model", NAMEOF('DimModel'[Model]), 3),
+				    ("Tier", NAMEOF('DimTier'[Tier]), 4)
+				}
+
+	annotation PBI_Id = ed91ed85d841446abfcae6e482209888
+

@@ -1,0 +1,7 @@
+createOrReplace
+	relationship Rel_Fact_User
+		fromColumn: FactTokenSpend.User
+		toColumn: DimUser.User
+		fromCardinality: many
+		toCardinality: one
+		crossFilteringBehavior: oneDirection

@@ -1,0 +1,37 @@
+table Stage
+	lineageTag: a4c7e890-135c-4def-8a01-11f0d66f47cb
+
+	measure 'Cascade %' =
+			SWITCH(SELECTEDVALUE(Stage[StageName]),
+			    "Total", 1,
+			    "Division Attributed", [Division Coverage %],
+			    "Application Attributed", [Application Coverage %],
+			    "User Attributed", [User Coverage %]
+			)
+		formatString: 0%;-0%;0%
+		lineageTag: 503a7655-6387-47ea-b0ef-3bf027e9b57f
+
+	column StageOrder
+		formatString: 0
+		lineageTag: 02f71b4f-d637-4c13-9b63-f5ec07c210be
+		summarizeBy: sum
+		isNameInferred
+		sourceColumn: [StageOrder]
+
+		annotation SummarizationSetBy = Automatic
+
+	column StageName
+		lineageTag: 7a1b7b6d-c18f-4fb4-95e8-c5350c8f623d
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [StageName]
+		sortByColumn: StageOrder
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Stage = calculated
+		mode: import
+		source = DATATABLE("StageOrder", INTEGER, "StageName", STRING, {{1,"Total"},{2,"Division Attributed"},{3,"Application Attributed"},{4,"User Attributed"}})
+
+	annotation PBI_Id = 4fd3f8312ef54efba2cb2aec05d778f4
+

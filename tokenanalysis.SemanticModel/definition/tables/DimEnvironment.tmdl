@@ -1,0 +1,24 @@
+table DimEnvironment
+	lineageTag: da4c8a27-21df-4450-b6bb-6b17bcd55ce3
+
+	column Environment
+		dataType: string
+		lineageTag: ce0d8c15-ba23-4eed-8245-73d31c84775d
+		summarizeBy: none
+		sourceColumn: Environment
+
+	partition DimEnvironment = m
+		mode: import
+		source =
+				let
+					Source = #table(
+						{"Environment"},
+						{
+							{"Production"},
+							{"Staging"},
+							{"Sandbox"}
+						}
+					)
+				in
+					Source
+

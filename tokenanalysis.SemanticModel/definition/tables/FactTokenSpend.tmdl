@@ -1,0 +1,599 @@
+table FactTokenSpend
+	lineageTag: e9af89f0-a532-4f84-90a3-31e9aa5a1e2a
+
+	measure 'Total  Spend.' = SUM(FactTokenSpend[SpendUSD])
+		formatString: \$#,0;(\$#,0);\$#,0
+		displayFolder: Spend
+		lineageTag: bd388682-e79a-48d0-8757-a324b5cae8ee
+
+	measure 'Total Tokens (Thousands)' = SUMX(FactTokenSpend, FactTokenSpend[TokensMillions] * 1000)
+		formatString: #,0
+		displayFolder: Spend
+		lineageTag: 9f603d00-1a07-47e8-a2fd-993c7b051903
+
+	measure 'Cost per 1K Tokens' = DIVIDE([Total  Spend.], [Total Tokens (Thousands)])
+		formatString: "$"0.00
+		displayFolder: Spend
+		lineageTag: d48b88df-d084-4559-9005-79300dfda2ae
+
+		annotation PBI_FormatHint = {"isCustom":true}
+
+	measure 'Total Spend - Prior Week' = CALCULATE([Total  Spend.], FILTER(ALL(DimDate), DimDate[WeekIndex] = MAX(DimDate[WeekIndex]) - 1))
+		formatString: 0
+		displayFolder: Spend
+		lineageTag: bb5fef2e-9f34-46c8-9969-5eff34451516
+
+	measure 'Spend WoW %' = DIVIDE([Total  Spend.] - [Total Spend - Prior Week], [Total Spend - Prior Week])
+		formatString: "↑ "0.0%;"↓ "0.0%
+		displayFolder: Spend
+		lineageTag: c20b4d10-c2cd-4bc9-b78e-f9809f95e764
+
+	measure 'Spend - Division Attributed' = CALCULATE([Total  Spend.], FactTokenSpend[Division] <> "Unattributed")
+		formatString: "$"#,0
+		displayFolder: Coverage
+		lineageTag: cd62bebc-8ef3-4b81-a202-350a22ef9d1e
+
+	measure 'Division Coverage %' = DIVIDE([Spend - Division Attributed], [Total  Spend.])
+		formatString: 0.0%
+		displayFolder: Coverage
+		lineageTag: 4498ad8e-bb29-41df-998e-9e28325b9ee2
+
+	measure 'Spend - Application Attributed' = CALCULATE([Total  Spend.], FactTokenSpend[Application] <> "Unattributed")
+		formatString: "$"#,0
+		displayFolder: Coverage
+		lineageTag: 4fa88496-b61d-4cde-a7ce-06d3e525744b
+
+	measure 'Application Coverage %' = DIVIDE([Spend - Application Attributed], [Total  Spend.])
+		formatString: 0.0%
+		displayFolder: Coverage
+		lineageTag: 8db423de-e1f2-447f-abf9-ecca9e993bbe
+
+	measure 'Spend - User Attributed' = CALCULATE([Total  Spend.], FactTokenSpend[User] <> "Unattributed")
+		formatString: "$"#,0
+		displayFolder: Coverage
+		lineageTag: 2dbf01b6-1c3f-49c1-bee9-d4162361c0c8
+
+	measure 'User Coverage %' = DIVIDE([Spend - User Attributed], [Total  Spend.])
+		formatString: 0.0%
+		displayFolder: Coverage
+		lineageTag: 5d8e48cb-499c-4004-8ae1-4e9c5ada0fa9
+
+	measure 'Ambiguous Cost' = [Total  Spend.] - [Spend - Application Attributed]
+		formatString: "$"#,0
+		displayFolder: Coverage
+		lineageTag: b83e705f-775d-4bc6-b68f-7221867afeea
+
+	measure 'Ambiguous Cost %' = 1 - [Application Coverage %]
+		formatString: 0.0%
+		displayFolder: Coverage
+		lineageTag: 28560ecd-0de2-42e8-bd7c-90c0d68c058c
+
+	measure 'Ambiguous Cost % - 3wk Avg' = VAR CurrentWeek = MAX(DimDate[WeekIndex]) VAR Last3Weeks = FILTER(ALL(DimDate), DimDate[WeekIndex] <= CurrentWeek && DimDate[WeekIndex] > CurrentWeek - 3) RETURN CALCULATE([Ambiguous Cost %], Last3Weeks)
+		formatString: 0.0%
+		displayFolder: Coverage
+		lineageTag: f80dd0bb-ec52-4fec-981f-1fffa114101b
+
+	measure 'Measured Spend' = CALCULATE([Total  Spend.], DimAttributionQuality[AttributionQuality] = "Measured")
+		formatString: "$"#,0
+		displayFolder: Attribution Quality
+		lineageTag: b0c31113-3278-4cdd-8cda-b310636e5ec3
+
+	measure 'Estimated Spend' = CALCULATE([Total  Spend.], DimAttributionQuality[AttributionQuality] = "Estimated")
+		formatString: "$"#,0
+		displayFolder: Attribution Quality
+		lineageTag: 50e7aa13-2421-4abf-87d0-62e7b3b660bb
+
+	measure 'Modeled Spend' = CALCULATE([Total  Spend.], DimAttributionQuality[AttributionQuality] = "Modeled")
+		formatString: "$"#,0
+		displayFolder: Attribution Quality
+		lineageTag: 7fe0833e-316f-4558-bf41-ccf64f9fea8a
+
+	measure 'Unknown-Quality Spend' = CALCULATE([Total  Spend.], DimAttributionQuality[AttributionQuality] = "Unknown")
+		formatString: "$"#,0
+		displayFolder: Attribution Quality
+		lineageTag: e0fd96c5-5768-4d9e-b626-7eba9712c983
+
+	measure 'Measured % of Spend' = DIVIDE([Measured Spend], [Total  Spend.])
+		formatString: 0.0%
+		displayFolder: Attribution Quality
+		lineageTag: 1394486e-dc6f-4c40-88b0-907d1859df50
+
+	measure 'Estimated % of Spend' = DIVIDE([Estimated Spend], [Total  Spend.])
+		formatString: 0.0%
+		displayFolder: Attribution Quality
+		lineageTag: e38a53f9-e4e9-419c-be8a-0bbe71ef934a
+
+	measure 'Modeled % of Spend' = DIVIDE([Modeled Spend], [Total  Spend.])
+		formatString: 0.0%
+		displayFolder: Attribution Quality
+		lineageTag: db33f1e5-eacb-49ab-a07c-2642c02d3066
+
+	measure 'Unknown % of Spend' = DIVIDE([Unknown-Quality Spend], [Total  Spend.])
+		formatString: 0.0%
+		displayFolder: Attribution Quality
+		lineageTag: b082ac71-90c4-4ffd-ba1d-ccdbbe563694
+
+	measure 'Data As Of' = FORMAT(MAX(DimDate[Date]), "MMM d, yyyy")
+		displayFolder: Info
+		lineageTag: ffacf354-5e19-4dd7-b8b8-073f65b2d4bf
+
+	measure 'Row Count' = COUNTROWS(FactTokenSpend)
+		formatString: #,0
+		displayFolder: Info
+		lineageTag: 1b6dc240-6dd6-46b5-9336-79637fb7ba9e
+
+	measure 'Spend WoW % Display' = VAR v = [Spend WoW %] RETURN IF(v >= 0, "↑ " & FORMAT(v, "0.0%") & " vs LW", "↓ " & FORMAT(ABS(v), "0.0%") & " vs LW")
+		displayFolder: Spend
+		lineageTag: c65b6d93-5e27-4593-9899-b6f3f66639d9
+
+	measure 'Cost per 1K Tokens - Prior Week' = CALCULATE([Cost per 1K Tokens], FILTER(ALL(DimDate), DimDate[WeekIndex] = MAX(DimDate[WeekIndex]) - 1))
+		formatString: "$"0.00
+		displayFolder: Spend
+		lineageTag: 5e7fd953-5298-46df-9e26-080e8e9403ee
+
+	measure 'Cost per 1K Tokens WoW %' = DIVIDE([Cost per 1K Tokens] - [Cost per 1K Tokens - Prior Week], [Cost per 1K Tokens - Prior Week])
+		formatString: "↑ "0.0%;"↓ "0.0%
+		displayFolder: Spend
+		lineageTag: 13ec9b18-ab48-469c-b85a-c5cd7d8c5b33
+
+	measure 'Cost per 1K Tokens WoW % Display' = VAR v = [Cost per 1K Tokens WoW %] RETURN IF(v >= 0, "↑ " & FORMAT(v, "0.0%") & " vs LW", "↓ " & FORMAT(ABS(v), "0.0%") & " vs LW")
+		displayFolder: Spend
+		lineageTag: e60783ce-b419-410b-af7f-af8467b678de
+
+	measure 'Application Coverage % - Prior Week' = CALCULATE([Application Coverage %], FILTER(ALL(DimDate), DimDate[WeekIndex] = MAX(DimDate[WeekIndex]) - 1))
+		formatString: 0.0%
+		displayFolder: Coverage
+		lineageTag: 5d0a4849-5b1e-4653-839b-a5e13c492928
+
+	measure 'Application Coverage % WoW (pts)' = ([Application Coverage %] - [Application Coverage % - Prior Week]) * 100
+		formatString: "↑ "0.0;"↓ "0.0
+		displayFolder: Coverage
+		lineageTag: 4d24e359-8c6c-4833-bd34-1c5e4d5cec22
+
+	measure 'Application Coverage % WoW Display' = VAR v = [Application Coverage % WoW (pts)] RETURN IF(v >= 0, "↑ " & FORMAT(v, "0.0") & " pts vs LW", "↓ " & FORMAT(ABS(v), "0.0") & " pts vs LW")
+		displayFolder: Coverage
+		lineageTag: 2373daac-b780-47ae-b685-b1a0960a5d6c
+
+	measure 'Ambiguous Cost - Prior Week' = CALCULATE([Ambiguous Cost], FILTER(ALL(DimDate), DimDate[WeekIndex] = MAX(DimDate[WeekIndex]) - 1))
+		formatString: "$"#,0
+		displayFolder: Coverage
+		lineageTag: ccbf2e73-6d9c-4dae-bcdf-e01aa74705da
+
+	measure 'Ambiguous Cost WoW %' = DIVIDE([Ambiguous Cost] - [Ambiguous Cost - Prior Week], [Ambiguous Cost - Prior Week])
+		formatString: "↑ "0.0%;"↓ "0.0%
+		displayFolder: Coverage
+		lineageTag: 3715218b-63c2-4218-af11-6dc2349c5d19
+
+	measure 'Ambiguous Cost WoW % Display' = VAR v = [Ambiguous Cost WoW %] RETURN IF(v >= 0, "↑ " & FORMAT(v, "0.0%") & " vs LW", "↓ " & FORMAT(ABS(v), "0.0%") & " vs LW")
+		displayFolder: Coverage
+		lineageTag: f254007f-7d72-4deb-872f-7c4025c4afbc
+
+	column RowId
+		dataType: string
+		isHidden
+		lineageTag: 8bf99350-1a28-4734-8697-f5bd2fedde9e
+		summarizeBy: none
+		sourceColumn: RowId
+
+		annotation SummarizationSetBy = Automatic
+
+	column Date
+		dataType: string
+		lineageTag: 4b344d04-179f-4ee0-9c6c-c7b627c96cb3
+		summarizeBy: none
+		sourceColumn: Date
+
+		annotation SummarizationSetBy = Automatic
+
+	column Week
+		dataType: string
+		lineageTag: 6050f57e-6c9e-4a5d-91d4-3afc06b8cb1c
+		summarizeBy: none
+		sourceColumn: Week
+
+	column Division
+		dataType: string
+		lineageTag: 69783022-5380-4790-943c-e10b602b7320
+		summarizeBy: none
+		sourceColumn: Division
+
+	column Application
+		dataType: string
+		lineageTag: 868af061-810e-4719-960e-df1ecbd5cdad
+		summarizeBy: none
+		sourceColumn: Application
+
+	column Publisher
+		dataType: string
+		lineageTag: dc93bec3-6fbe-44f9-8171-6900fd4442cd
+		summarizeBy: none
+		sourceColumn: Publisher
+
+	column Model
+		dataType: string
+		lineageTag: fc4a4289-6bc1-48b2-96f6-9edb0be0a0b0
+		summarizeBy: none
+		sourceColumn: Model
+
+	column TokenType
+		dataType: string
+		lineageTag: dae9d375-4305-44f1-87f1-a19199f24fcf
+		summarizeBy: none
+		sourceColumn: TokenType
+
+	column Tier
+		dataType: string
+		lineageTag: cffaabdd-6c86-42df-8b50-88a55b9801ff
+		summarizeBy: none
+		sourceColumn: Tier
+
+	column Environment
+		dataType: string
+		lineageTag: b4f370ea-cec5-44b9-9f72-db4f75a168a6
+		summarizeBy: none
+		sourceColumn: Environment
+
+	column Audience
+		dataType: string
+		lineageTag: ad4fc8e9-4ef5-4f3e-9bc3-29c48c41fdca
+		summarizeBy: none
+		sourceColumn: Audience
+
+	column AttributionQuality
+		dataType: string
+		lineageTag: 808057d1-60c7-4540-9e69-12f9f8b460c7
+		summarizeBy: none
+		sourceColumn: AttributionQuality
+
+	column User
+		dataType: string
+		lineageTag: aee74aa7-e4cf-49f6-b6a6-4e79bec19e06
+		summarizeBy: none
+		sourceColumn: User
+
+	column TokensMillions
+		dataType: double
+		formatString: 0.0
+		lineageTag: 56fdc35e-6730-4367-9456-60f43b159f03
+		summarizeBy: sum
+		sourceColumn: TokensMillions
+
+		changedProperty = DataType
+
+		annotation SummarizationSetBy = Automatic
+
+	column SpendUSD
+		dataType: int64
+		formatString: 0
+		lineageTag: c2e5e54e-a519-4f5f-982b-0c89e71371a4
+		summarizeBy: sum
+		sourceColumn: SpendUSD
+
+		changedProperty = DataType
+
+		annotation SummarizationSetBy = Automatic
+
+	partition FactTokenSpend = m
+		mode: import
+		source =
+				let
+				    Source = #table(
+				        {"RowId", "Date", "Week", "Division", "Application", "Publisher", "Model", "TokenType", "Tier", "Environment", "Audience", "AttributionQuality", "User", "TokensMillions", "SpendUSD"},
+				        {
+				            {1, #date(2026,6,18), "W1", "Product", "Insights Bot", "OpenAI", "GPT-4o", "Input", "Standard", "Production", "Client-Facing", "Measured", "U-1012", 249.6, 2064.73},
+				            {2, #date(2026,6,18), "W1", "Sales", "Support Assistant", "Google", "Gemini 2.5 Pro", "Input", "Standard", "Production", "Internal", "Estimated", "U-1001", 234.7, 1856.29},
+				            {3, #date(2026,6,18), "W1", "Finance", "Research Copilot", "Anthropic", "Claude Opus 4.5", "Output", "Enterprise", "Production", "Internal", "Measured", "U-1010", 220.9, 4930.38},
+				            {4, #date(2026,6,18), "W1", "Operations", "Unattributed", "Google", "Gemini 2.5 Pro", "Input", "Standard", "Production", "Internal", "Modeled", "Unattributed", 242.3, 1867.57},
+				            {5, #date(2026,6,18), "W1", "Finance", "Research Copilot", "OpenAI", "GPT-4o", "Fine-tune", "Premium", "Production", "Internal", "Estimated", "U-1012", 194.7, 4009.4},
+				            {6, #date(2026,6,18), "W1", "Product", "Insights Bot", "Mistral", "Mistral Large", "Input", "Standard", "Sandbox", "Internal", "Measured", "U-1010", 236.4, 1981.0},
+				            {7, #date(2026,6,18), "W1", "Finance", "Research Copilot", "Anthropic", "Claude Opus 4.5", "Output", "Standard", "Staging", "Client-Facing", "Measured", "Unattributed", 160.0, 2517.43},
+				            {8, #date(2026,6,18), "W1", "Operations", "Code Assistant", "OpenAI", "GPT-4o", "Cached", "Premium", "Production", "Internal", "Measured", "U-1001", 170.9, 1299.26},
+				            {9, #date(2026,6,18), "W1", "Operations", "Code Assistant", "Mistral", "Mistral Large", "Output", "Enterprise", "Production", "Internal", "Measured", "U-1003", 236.7, 5156.83},
+				            {10, #date(2026,6,18), "W1", "Sales", "Support Assistant", "Anthropic", "Claude Opus 4.5", "Output", "Standard", "Production", "Internal", "Measured", "Unattributed", 218.7, 3243.83},
+				            {11, #date(2026,6,18), "W1", "Finance", "Research Copilot", "Mistral", "Mistral Large", "Input", "Standard", "Production", "Client-Facing", "Measured", "U-1005", 173.8, 1418.84},
+				            {12, #date(2026,6,18), "W1", "Corporate", "Compliance Helper", "Mistral", "Mistral Large", "Cached", "Premium", "Staging", "Client-Facing", "Estimated", "U-1011", 162.6, 1216.98},
+				            {13, #date(2026,6,18), "W1", "Corporate", "Compliance Helper", "OpenAI", "GPT-4o", "Cached", "Standard", "Staging", "Client-Facing", "Measured", "U-1004", 156.9, 933.06},
+				            {14, #date(2026,6,18), "W1", "Unattributed", "Unattributed", "Google", "Gemini 2.5 Pro", "Cached", "Premium", "Sandbox", "Internal", "Modeled", "Unattributed", 163.8, 1222.4},
+				            {15, #date(2026,6,18), "W1", "Corporate", "Compliance Helper", "Anthropic", "Claude Opus 4.5", "Input", "Enterprise", "Production", "Internal", "Measured", "U-1010", 181.2, 2072.97},
+				            {16, #date(2026,6,18), "W1", "Product", "Insights Bot", "OpenAI", "GPT-4o", "Cached", "Standard", "Sandbox", "Internal", "Estimated", "Unattributed", 204.6, 1256.69},
+				            {17, #date(2026,6,18), "W1", "Sales", "Support Assistant", "Google", "Gemini 2.5 Pro", "Cached", "Standard", "Production", "Internal", "Estimated", "U-1001", 235.7, 1477.02},
+				            {18, #date(2026,6,18), "W1", "Corporate", "Compliance Helper", "OpenAI", "GPT-4o", "Fine-tune", "Standard", "Production", "Internal", "Measured", "Unattributed", 159.1, 2600.73},
+				            {19, #date(2026,6,18), "W1", "Product", "Insights Bot", "Google", "Gemini 2.5 Pro", "Fine-tune", "Enterprise", "Production", "Internal", "Estimated", "U-1009", 196.3, 5026.3},
+				            {20, #date(2026,6,18), "W1", "Finance", "Unattributed", "Google", "Gemini 2.5 Pro", "Input", "Standard", "Production", "Client-Facing", "Unknown", "Unattributed", 199.7, 1615.89},
+				            {21, #date(2026,6,18), "W1", "Operations", "Unattributed", "OpenAI", "GPT-4o", "Cached", "Standard", "Production", "Internal", "Modeled", "Unattributed", 167.0, 1042.65},
+				            {22, #date(2026,6,18), "W1", "Product", "Insights Bot", "Mistral", "Mistral Large", "Output", "Standard", "Production", "Internal", "Estimated", "U-1004", 193.1, 2985.13},
+				            {23, #date(2026,6,18), "W1", "Product", "Unattributed", "Anthropic", "Claude Opus 4.5", "Cached", "Standard", "Production", "Internal", "Estimated", "Unattributed", 239.6, 1371.55},
+				            {24, #date(2026,6,18), "W1", "Operations", "Code Assistant", "Anthropic", "Claude Opus 4.5", "Input", "Standard", "Production", "Internal", "Measured", "U-1008", 191.4, 1550.45},
+				            {25, #date(2026,6,25), "W2", "Product", "Insights Bot", "OpenAI", "GPT-4o", "Output", "Standard", "Production", "Internal", "Unknown", "Unattributed", 244.7, 3670.65},
+				            {26, #date(2026,6,25), "W2", "Sales", "Support Assistant", "Mistral", "Mistral Large", "Output", "Standard", "Staging", "Client-Facing", "Estimated", "U-1011", 163.0, 2433.64},
+				            {27, #date(2026,6,25), "W2", "Finance", "Research Copilot", "Mistral", "Mistral Large", "Cached", "Standard", "Production", "Internal", "Modeled", "U-1011", 222.2, 1375.64},
+				            {28, #date(2026,6,25), "W2", "Finance", "Research Copilot", "Anthropic", "Claude Opus 4.5", "Output", "Enterprise", "Sandbox", "Client-Facing", "Measured", "U-1006", 203.7, 4716.53},
+				            {29, #date(2026,6,25), "W2", "Finance", "Research Copilot", "Google", "Gemini 2.5 Pro", "Input", "Standard", "Production", "Internal", "Estimated", "U-1004", 177.5, 1479.61},
+				            {30, #date(2026,6,25), "W2", "Finance", "Research Copilot", "Mistral", "Mistral Large", "Input", "Standard", "Production", "Client-Facing", "Estimated", "U-1009", 164.1, 1266.68},
+				            {31, #date(2026,6,25), "W2", "Corporate", "Compliance Helper", "Mistral", "Mistral Large", "Fine-tune", "Premium", "Production", "Client-Facing", "Measured", "U-1012", 193.9, 4144.59},
+				            {32, #date(2026,6,25), "W2", "Sales", "Unattributed", "Google", "Gemini 2.5 Pro", "Cached", "Premium", "Sandbox", "Client-Facing", "Estimated", "Unattributed", 210.9, 1550.82},
+				            {33, #date(2026,6,25), "W2", "Corporate", "Compliance Helper", "Google", "Gemini 2.5 Pro", "Fine-tune", "Standard", "Production", "Internal", "Measured", "U-1001", 210.5, 3409.51},
+				            {34, #date(2026,6,25), "W2", "Product", "Insights Bot", "OpenAI", "GPT-4o", "Fine-tune", "Standard", "Production", "Client-Facing", "Estimated", "Unattributed", 195.9, 3470.43},
+				            {35, #date(2026,6,25), "W2", "Product", "Insights Bot", "Google", "Gemini 2.5 Pro", "Output", "Standard", "Production", "Internal", "Measured", "U-1008", 231.6, 3613.15},
+				            {36, #date(2026,6,25), "W2", "Finance", "Unattributed", "Anthropic", "Claude Opus 4.5", "Fine-tune", "Premium", "Staging", "Internal", "Estimated", "Unattributed", 227.9, 4611.77},
+				            {37, #date(2026,6,25), "W2", "Sales", "Unattributed", "OpenAI", "GPT-4o", "Cached", "Standard", "Production", "Client-Facing", "Estimated", "Unattributed", 160.5, 985.24},
+				            {38, #date(2026,6,25), "W2", "Unattributed", "Unattributed", "Google", "Gemini 2.5 Pro", "Output", "Premium", "Staging", "Internal", "Unknown", "Unattributed", 213.3, 4129.43},
+				            {39, #date(2026,6,25), "W2", "Corporate", "Compliance Helper", "Anthropic", "Claude Opus 4.5", "Output", "Premium", "Staging", "Client-Facing", "Measured", "U-1012", 235.7, 4301.23},
+				            {40, #date(2026,6,25), "W2", "Operations", "Unattributed", "Anthropic", "Claude Opus 4.5", "Cached", "Premium", "Staging", "Internal", "Estimated", "Unattributed", 227.8, 1656.31},
+				            {41, #date(2026,6,25), "W2", "Sales", "Support Assistant", "Anthropic", "Claude Opus 4.5", "Input", "Standard", "Production", "Client-Facing", "Measured", "Unattributed", 192.2, 1582.18},
+				            {42, #date(2026,6,25), "W2", "Product", "Insights Bot", "OpenAI", "GPT-4o", "Input", "Standard", "Production", "Client-Facing", "Measured", "U-1009", 246.8, 1898.47},
+				            {43, #date(2026,6,25), "W2", "Operations", "Code Assistant", "Anthropic", "Claude Opus 4.5", "Input", "Standard", "Production", "Client-Facing", "Measured", "Unattributed", 211.3, 1758.88},
+				            {44, #date(2026,6,25), "W2", "Sales", "Support Assistant", "Anthropic", "Claude Opus 4.5", "Input", "Standard", "Staging", "Client-Facing", "Measured", "U-1001", 242.7, 1863.01},
+				            {45, #date(2026,6,25), "W2", "Product", "Insights Bot", "OpenAI", "GPT-4o", "Input", "Standard", "Production", "Internal", "Measured", "U-1001", 193.0, 1559.58},
+				            {46, #date(2026,6,25), "W2", "Finance", "Research Copilot", "Anthropic", "Claude Opus 4.5", "Output", "Standard", "Production", "Internal", "Measured", "U-1002", 242.2, 3671.1},
+				            {47, #date(2026,6,25), "W2", "Finance", "Research Copilot", "Google", "Gemini 2.5 Pro", "Input", "Premium", "Production", "Client-Facing", "Measured", "U-1010", 212.9, 2108.67},
+				            {48, #date(2026,6,25), "W2", "Corporate", "Compliance Helper", "Google", "Gemini 2.5 Pro", "Cached", "Standard", "Production", "Client-Facing", "Estimated", "U-1003", 166.0, 1039.21},
+				            {49, #date(2026,7,2), "W3", "Corporate", "Compliance Helper", "OpenAI", "GPT-4o", "Output", "Premium", "Production", "Internal", "Measured", "U-1009", 177.6, 3277.0},
+				            {50, #date(2026,7,2), "W3", "Corporate", "Compliance Helper", "OpenAI", "GPT-4o", "Fine-tune", "Premium", "Production", "Internal", "Measured", "U-1003", 225.9, 4582.01},
+				            {51, #date(2026,7,2), "W3", "Sales", "Support Assistant", "Mistral", "Mistral Large", "Input", "Standard", "Production", "Internal", "Measured", "U-1009", 189.9, 1490.7},
+				            {52, #date(2026,7,2), "W3", "Unattributed", "Unattributed", "Google", "Gemini 2.5 Pro", "Cached", "Standard", "Production", "Internal", "Unknown", "Unattributed", 213.3, 1268.13},
+				            {53, #date(2026,7,2), "W3", "Finance", "Research Copilot", "Google", "Gemini 2.5 Pro", "Fine-tune", "Standard", "Sandbox", "Client-Facing", "Estimated", "U-1007", 157.4, 2784.32},
+				            {54, #date(2026,7,2), "W3", "Operations", "Code Assistant", "Anthropic", "Claude Opus 4.5", "Input", "Premium", "Staging", "Client-Facing", "Measured", "U-1004", 196.8, 2062.23},
+				            {55, #date(2026,7,2), "W3", "Finance", "Research Copilot", "OpenAI", "GPT-4o", "Fine-tune", "Standard", "Production", "Internal", "Measured", "U-1008", 202.8, 3318.08},
+				            {56, #date(2026,7,2), "W3", "Product", "Insights Bot", "Mistral", "Mistral Large", "Cached", "Premium", "Production", "Internal", "Modeled", "U-1003", 224.4, 1736.04},
+				            {57, #date(2026,7,2), "W3", "Sales", "Unattributed", "Anthropic", "Claude Opus 4.5", "Fine-tune", "Standard", "Staging", "Client-Facing", "Modeled", "Unattributed", 212.5, 3561.63},
+				            {58, #date(2026,7,2), "W3", "Corporate", "Compliance Helper", "Anthropic", "Claude Opus 4.5", "Cached", "Premium", "Production", "Internal", "Measured", "U-1011", 248.0, 1937.32},
+				            {59, #date(2026,7,2), "W3", "Finance", "Research Copilot", "OpenAI", "GPT-4o", "Cached", "Standard", "Production", "Internal", "Modeled", "U-1002", 172.3, 1010.88},
+				            {60, #date(2026,7,2), "W3", "Sales", "Support Assistant", "Anthropic", "Claude Opus 4.5", "Cached", "Standard", "Production", "Internal", "Estimated", "Unattributed", 199.4, 1152.54},
+				            {61, #date(2026,7,2), "W3", "Finance", "Research Copilot", "Mistral", "Mistral Large", "Output", "Standard", "Production", "Internal", "Measured", "U-1010", 165.1, 2390.68},
+				            {62, #date(2026,7,2), "W3", "Corporate", "Compliance Helper", "Anthropic", "Claude Opus 4.5", "Fine-tune", "Premium", "Production", "Internal", "Measured", "U-1007", 182.4, 3892.91},
+				            {63, #date(2026,7,2), "W3", "Product", "Unattributed", "Mistral", "Mistral Large", "Cached", "Premium", "Production", "Internal", "Modeled", "Unattributed", 241.1, 1827.0},
+				            {64, #date(2026,7,2), "W3", "Product", "Insights Bot", "Google", "Gemini 2.5 Pro", "Cached", "Enterprise", "Production", "Client-Facing", "Estimated", "U-1006", 182.7, 1711.1},
+				            {65, #date(2026,7,2), "W3", "Corporate", "Compliance Helper", "Google", "Gemini 2.5 Pro", "Fine-tune", "Premium", "Sandbox", "Internal", "Estimated", "U-1012", 172.1, 3828.19},
+				            {66, #date(2026,7,2), "W3", "Sales", "Support Assistant", "OpenAI", "GPT-4o", "Cached", "Premium", "Production", "Client-Facing", "Measured", "U-1012", 208.5, 1610.06},
+				            {67, #date(2026,7,2), "W3", "Product", "Insights Bot", "Anthropic", "Claude Opus 4.5", "Output", "Standard", "Production", "Client-Facing", "Measured", "Unattributed", 178.1, 2543.86},
+				            {68, #date(2026,7,2), "W3", "Corporate", "Compliance Helper", "Anthropic", "Claude Opus 4.5", "Cached", "Enterprise", "Production", "Client-Facing", "Estimated", "Unattributed", 156.4, 1414.19},
+				            {69, #date(2026,7,2), "W3", "Finance", "Research Copilot", "Google", "Gemini 2.5 Pro", "Input", "Standard", "Production", "Internal", "Estimated", "U-1002", 152.6, 1239.54},
+				            {70, #date(2026,7,2), "W3", "Product", "Unattributed", "Anthropic", "Claude Opus 4.5", "Output", "Standard", "Staging", "Internal", "Unknown", "Unattributed", 195.9, 2894.55},
+				            {71, #date(2026,7,2), "W3", "Operations", "Code Assistant", "Anthropic", "Claude Opus 4.5", "Fine-tune", "Standard", "Staging", "Internal", "Estimated", "Unattributed", 211.8, 3437.22},
+				            {72, #date(2026,7,2), "W3", "Operations", "Unattributed", "OpenAI", "GPT-4o", "Fine-tune", "Premium", "Staging", "Client-Facing", "Modeled", "Unattributed", 214.0, 4558.35},
+				            {73, #date(2026,7,9), "W4", "Corporate", "Compliance Helper", "Anthropic", "Claude Opus 4.5", "Fine-tune", "Standard", "Production", "Internal", "Modeled", "U-1009", 225.8, 3766.33},
+				            {74, #date(2026,7,9), "W4", "Unattributed", "Unattributed", "Mistral", "Mistral Large", "Cached", "Standard", "Production", "Client-Facing", "Estimated", "Unattributed", 216.0, 1331.21},
+				            {75, #date(2026,7,9), "W4", "Sales", "Support Assistant", "Mistral", "Mistral Large", "Input", "Standard", "Production", "Client-Facing", "Estimated", "U-1005", 247.6, 2039.18},
+				            {76, #date(2026,7,9), "W4", "Finance", "Research Copilot", "Anthropic", "Claude Opus 4.5", "Input", "Enterprise", "Staging", "Internal", "Measured", "U-1003", 174.7, 2079.93},
+				            {77, #date(2026,7,9), "W4", "Operations", "Code Assistant", "Anthropic", "Claude Opus 4.5", "Cached", "Enterprise", "Staging", "Internal", "Measured", "U-1009", 224.2, 2041.91},
+				            {78, #date(2026,7,9), "W4", "Sales", "Support Assistant", "Anthropic", "Claude Opus 4.5", "Input", "Standard", "Staging", "Internal", "Estimated", "U-1010", 162.8, 1283.09},
+				            {79, #date(2026,7,9), "W4", "Finance", "Research Copilot", "Mistral", "Mistral Large", "Fine-tune", "Standard", "Production", "Internal", "Measured", "Unattributed", 200.6, 3246.18},
+				            {80, #date(2026,7,9), "W4", "Sales", "Support Assistant", "OpenAI", "GPT-4o", "Fine-tune", "Standard", "Production", "Internal", "Measured", "U-1005", 165.8, 2912.18},
+				            {81, #date(2026,7,9), "W4", "Product", "Insights Bot", "OpenAI", "GPT-4o", "Cached", "Enterprise", "Production", "Internal", "Measured", "Unattributed", 157.4, 1365.68},
+				            {82, #date(2026,7,9), "W4", "Product", "Unattributed", "OpenAI", "GPT-4o", "Fine-tune", "Standard", "Production", "Client-Facing", "Modeled", "Unattributed", 173.7, 2971.83},
+				            {83, #date(2026,7,9), "W4", "Finance", "Research Copilot", "Anthropic", "Claude Opus 4.5", "Output", "Standard", "Production", "Internal", "Measured", "Unattributed", 179.8, 2653.14},
+				            {84, #date(2026,7,9), "W4", "Finance", "Unattributed", "Google", "Gemini 2.5 Pro", "Output", "Standard", "Production", "Internal", "Modeled", "Unattributed", 244.5, 3690.53},
+				            {85, #date(2026,7,9), "W4", "Operations", "Code Assistant", "Mistral", "Mistral Large", "Fine-tune", "Standard", "Production", "Internal", "Measured", "U-1003", 217.8, 3779.72},
+				            {86, #date(2026,7,9), "W4", "Finance", "Research Copilot", "Mistral", "Mistral Large", "Input", "Standard", "Production", "Client-Facing", "Modeled", "U-1006", 193.4, 1589.16},
+				            {87, #date(2026,7,9), "W4", "Product", "Unattributed", "Anthropic", "Claude Opus 4.5", "Output", "Premium", "Staging", "Internal", "Measured", "Unattributed", 183.1, 3402.96},
+				            {88, #date(2026,7,9), "W4", "Product", "Insights Bot", "Google", "Gemini 2.5 Pro", "Output", "Premium", "Production", "Internal", "Measured", "U-1011", 183.1, 3378.96},
+				            {89, #date(2026,7,9), "W4", "Corporate", "Compliance Helper", "Mistral", "Mistral Large", "Output", "Premium", "Production", "Client-Facing", "Estimated", "U-1009", 211.1, 3822.89},
+				            {90, #date(2026,7,9), "W4", "Corporate", "Unattributed", "Anthropic", "Claude Opus 4.5", "Cached", "Premium", "Production", "Internal", "Unknown", "Unattributed", 169.8, 1328.71},
+				            {91, #date(2026,7,9), "W4", "Sales", "Support Assistant", "OpenAI", "GPT-4o", "Output", "Premium", "Production", "Internal", "Measured", "Unattributed", 191.7, 3534.56},
+				            {92, #date(2026,7,9), "W4", "Operations", "Code Assistant", "Google", "Gemini 2.5 Pro", "Fine-tune", "Enterprise", "Production", "Client-Facing", "Measured", "U-1009", 173.9, 4465.19},
+				            {93, #date(2026,7,9), "W4", "Corporate", "Compliance Helper", "Google", "Gemini 2.5 Pro", "Output", "Enterprise", "Sandbox", "Client-Facing", "Measured", "U-1001", 210.2, 4551.03},
+				            {94, #date(2026,7,9), "W4", "Operations", "Code Assistant", "Anthropic", "Claude Opus 4.5", "Cached", "Premium", "Production", "Internal", "Estimated", "U-1003", 157.6, 1126.68},
+				            {95, #date(2026,7,9), "W4", "Sales", "Support Assistant", "Google", "Gemini 2.5 Pro", "Fine-tune", "Premium", "Production", "Client-Facing", "Measured", "U-1001", 165.9, 3494.35},
+				            {96, #date(2026,7,9), "W4", "Product", "Insights Bot", "OpenAI", "GPT-4o", "Fine-tune", "Standard", "Production", "Internal", "Estimated", "U-1011", 206.8, 3456.57},
+				            {97, #date(2026,7,16), "W5", "Product", "Unattributed", "Anthropic", "Claude Opus 4.5", "Fine-tune", "Enterprise", "Production", "Internal", "Modeled", "Unattributed", 241.0, 6173.14},
+				            {98, #date(2026,7,16), "W5", "Unattributed", "Unattributed", "OpenAI", "GPT-4o", "Cached", "Enterprise", "Production", "Client-Facing", "Unknown", "Unattributed", 172.2, 1588.02},
+				            {99, #date(2026,7,16), "W5", "Finance", "Unattributed", "OpenAI", "GPT-4o", "Output", "Standard", "Production", "Client-Facing", "Modeled", "Unattributed", 150.1, 2193.85},
+				            {100, #date(2026,7,16), "W5", "Operations", "Code Assistant", "Anthropic", "Claude Opus 4.5", "Input", "Standard", "Production", "Internal", "Measured", "U-1004", 164.1, 1338.04},
+				            {101, #date(2026,7,16), "W5", "Finance", "Research Copilot", "Mistral", "Mistral Large", "Cached", "Standard", "Production", "Client-Facing", "Measured", "U-1004", 247.7, 1482.13},
+				            {102, #date(2026,7,16), "W5", "Finance", "Research Copilot", "Anthropic", "Claude Opus 4.5", "Cached", "Premium", "Production", "Internal", "Unknown", "Unattributed", 167.2, 1301.62},
+				            {103, #date(2026,7,16), "W5", "Sales", "Support Assistant", "Anthropic", "Claude Opus 4.5", "Output", "Enterprise", "Sandbox", "Client-Facing", "Estimated", "U-1005", 180.6, 4192.59},
+				            {104, #date(2026,7,16), "W5", "Sales", "Support Assistant", "Google", "Gemini 2.5 Pro", "Fine-tune", "Standard", "Production", "Client-Facing", "Measured", "U-1005", 162.1, 2808.37},
+				            {105, #date(2026,7,16), "W5", "Sales", "Support Assistant", "Google", "Gemini 2.5 Pro", "Cached", "Standard", "Production", "Client-Facing", "Measured", "Unattributed", 209.0, 1220.02},
+				            {106, #date(2026,7,16), "W5", "Sales", "Support Assistant", "Anthropic", "Claude Opus 4.5", "Cached", "Standard", "Production", "Internal", "Measured", "U-1002", 157.6, 985.05},
+				            {107, #date(2026,7,16), "W5", "Finance", "Research Copilot", "OpenAI", "GPT-4o", "Cached", "Premium", "Production", "Internal", "Measured", "U-1004", 166.5, 1309.73},
+				            {108, #date(2026,7,16), "W5", "Operations", "Code Assistant", "OpenAI", "GPT-4o", "Output", "Premium", "Production", "Client-Facing", "Measured", "U-1010", 212.2, 4144.43},
+				            {109, #date(2026,7,16), "W5", "Product", "Insights Bot", "OpenAI", "GPT-4o", "Output", "Standard", "Production", "Client-Facing", "Measured", "U-1001", 182.1, 2726.99},
+				            {110, #date(2026,7,16), "W5", "Corporate", "Compliance Helper", "Anthropic", "Claude Opus 4.5", "Output", "Standard", "Production", "Client-Facing", "Estimated", "Unattributed", 204.8, 2997.09},
+				            {111, #date(2026,7,16), "W5", "Sales", "Support Assistant", "Google", "Gemini 2.5 Pro", "Fine-tune", "Premium", "Staging", "Client-Facing", "Measured", "U-1012", 176.1, 3630.8},
+				            {112, #date(2026,7,16), "W5", "Product", "Insights Bot", "Anthropic", "Claude Opus 4.5", "Cached", "Standard", "Production", "Internal", "Estimated", "U-1005", 193.5, 1154.23},
+				            {113, #date(2026,7,16), "W5", "Finance", "Research Copilot", "OpenAI", "GPT-4o", "Input", "Enterprise", "Production", "Internal", "Measured", "U-1003", 229.2, 2678.33},
+				            {114, #date(2026,7,16), "W5", "Product", "Insights Bot", "OpenAI", "GPT-4o", "Cached", "Premium", "Production", "Client-Facing", "Measured", "Unattributed", 226.5, 1698.47},
+				            {115, #date(2026,7,16), "W5", "Corporate", "Compliance Helper", "Anthropic", "Claude Opus 4.5", "Fine-tune", "Standard", "Production", "Client-Facing", "Measured", "U-1001", 233.1, 4076.31},
+				            {116, #date(2026,7,16), "W5", "Product", "Insights Bot", "Google", "Gemini 2.5 Pro", "Output", "Premium", "Sandbox", "Internal", "Measured", "U-1003", 225.5, 4270.72},
+				            {117, #date(2026,7,16), "W5", "Product", "Unattributed", "OpenAI", "GPT-4o", "Input", "Standard", "Staging", "Internal", "Modeled", "Unattributed", 189.3, 1483.82},
+				            {118, #date(2026,7,16), "W5", "Finance", "Research Copilot", "OpenAI", "GPT-4o", "Output", "Standard", "Production", "Client-Facing", "Measured", "U-1004", 191.8, 2757.9},
+				            {119, #date(2026,7,16), "W5", "Operations", "Code Assistant", "Anthropic", "Claude Opus 4.5", "Input", "Standard", "Production", "Client-Facing", "Modeled", "U-1010", 223.7, 1801.66},
+				            {120, #date(2026,7,16), "W5", "Sales", "Support Assistant", "Mistral", "Mistral Large", "Fine-tune", "Enterprise", "Production", "Internal", "Measured", "U-1004", 154.9, 3917.74},
+				            {121, #date(2026,7,23), "W6", "Finance", "Research Copilot", "Google", "Gemini 2.5 Pro", "Fine-tune", "Standard", "Staging", "Internal", "Measured", "U-1011", 175.6, 3098.24},
+				            {122, #date(2026,7,23), "W6", "Product", "Unattributed", "Anthropic", "Claude Opus 4.5", "Fine-tune", "Standard", "Production", "Internal", "Modeled", "Unattributed", 153.2, 2555.51},
+				            {123, #date(2026,7,23), "W6", "Corporate", "Compliance Helper", "Anthropic", "Claude Opus 4.5", "Cached", "Standard", "Production", "Internal", "Estimated", "U-1009", 238.0, 1475.78},
+				            {124, #date(2026,7,23), "W6", "Product", "Insights Bot", "Anthropic", "Claude Opus 4.5", "Fine-tune", "Premium", "Production", "Internal", "Measured", "U-1003", 187.0, 4017.98},
+				            {125, #date(2026,7,23), "W6", "Unattributed", "Unattributed", "Mistral", "Mistral Large", "Input", "Premium", "Sandbox", "Internal", "Modeled", "Unattributed", 217.0, 2260.94},
+				            {126, #date(2026,7,23), "W6", "Operations", "Code Assistant", "OpenAI", "GPT-4o", "Cached", "Standard", "Production", "Internal", "Measured", "U-1001", 192.8, 1144.36},
+				            {127, #date(2026,7,23), "W6", "Operations", "Code Assistant", "Google", "Gemini 2.5 Pro", "Fine-tune", "Premium", "Production", "Client-Facing", "Measured", "U-1006", 170.2, 3713.79},
+				            {128, #date(2026,7,23), "W6", "Sales", "Support Assistant", "OpenAI", "GPT-4o", "Cached", "Enterprise", "Staging", "Internal", "Estimated", "U-1005", 175.7, 1637.11},
+				            {129, #date(2026,7,23), "W6", "Finance", "Research Copilot", "Mistral", "Mistral Large", "Input", "Standard", "Production", "Internal", "Measured", "U-1010", 155.5, 1243.45},
+				            {130, #date(2026,7,23), "W6", "Operations", "Code Assistant", "Google", "Gemini 2.5 Pro", "Input", "Standard", "Production", "Client-Facing", "Measured", "Unattributed", 206.6, 1613.45},
+				            {131, #date(2026,7,23), "W6", "Sales", "Support Assistant", "Mistral", "Mistral Large", "Fine-tune", "Premium", "Sandbox", "Internal", "Measured", "U-1002", 207.6, 4606.66},
+				            {132, #date(2026,7,23), "W6", "Corporate", "Unattributed", "Mistral", "Mistral Large", "Fine-tune", "Standard", "Production", "Internal", "Modeled", "Unattributed", 195.0, 3469.59},
+				            {133, #date(2026,7,23), "W6", "Sales", "Support Assistant", "Google", "Gemini 2.5 Pro", "Cached", "Standard", "Production", "Internal", "Estimated", "U-1005", 210.5, 1233.92},
+				            {134, #date(2026,7,23), "W6", "Sales", "Support Assistant", "OpenAI", "GPT-4o", "Fine-tune", "Standard", "Production", "Client-Facing", "Estimated", "U-1009", 226.5, 3688.41},
+				            {135, #date(2026,7,23), "W6", "Operations", "Code Assistant", "Google", "Gemini 2.5 Pro", "Cached", "Standard", "Production", "Client-Facing", "Measured", "Unattributed", 170.8, 1014.17},
+				            {136, #date(2026,7,23), "W6", "Sales", "Support Assistant", "Anthropic", "Claude Opus 4.5", "Output", "Standard", "Production", "Client-Facing", "Estimated", "U-1006", 179.4, 2668.07},
+				            {137, #date(2026,7,23), "W6", "Corporate", "Unattributed", "Mistral", "Mistral Large", "Output", "Premium", "Production", "Client-Facing", "Unknown", "Unattributed", 241.7, 4639.52},
+				            {138, #date(2026,7,23), "W6", "Finance", "Research Copilot", "OpenAI", "GPT-4o", "Cached", "Standard", "Production", "Client-Facing", "Estimated", "U-1007", 198.1, 1148.49},
+				            {139, #date(2026,7,23), "W6", "Finance", "Research Copilot", "Google", "Gemini 2.5 Pro", "Cached", "Standard", "Production", "Client-Facing", "Estimated", "U-1006", 175.3, 1065.98},
+				            {140, #date(2026,7,23), "W6", "Operations", "Code Assistant", "Anthropic", "Claude Opus 4.5", "Cached", "Enterprise", "Production", "Internal", "Measured", "Unattributed", 162.9, 1536.97},
+				            {141, #date(2026,7,23), "W6", "Sales", "Support Assistant", "Google", "Gemini 2.5 Pro", "Output", "Standard", "Production", "Client-Facing", "Measured", "U-1001", 173.1, 2514.62},
+				            {142, #date(2026,7,23), "W6", "Sales", "Support Assistant", "Google", "Gemini 2.5 Pro", "Cached", "Standard", "Production", "Internal", "Measured", "Unattributed", 243.3, 1531.16},
+				            {143, #date(2026,7,23), "W6", "Finance", "Research Copilot", "OpenAI", "GPT-4o", "Output", "Standard", "Production", "Client-Facing", "Estimated", "U-1001", 162.0, 2388.7},
+				            {144, #date(2026,7,23), "W6", "Product", "Insights Bot", "Anthropic", "Claude Opus 4.5", "Cached", "Standard", "Production", "Client-Facing", "Measured", "U-1012", 215.0, 1254.35},
+				            {145, #date(2026,7,30), "W7", "Product", "Insights Bot", "Anthropic", "Claude Opus 4.5", "Output", "Enterprise", "Production", "Internal", "Measured", "U-1009", 185.1, 4189.65},
+				            {146, #date(2026,7,30), "W7", "Corporate", "Compliance Helper", "Google", "Gemini 2.5 Pro", "Cached", "Standard", "Production", "Internal", "Measured", "U-1012", 230.5, 1392.85},
+				            {147, #date(2026,7,30), "W7", "Finance", "Research Copilot", "Anthropic", "Claude Opus 4.5", "Input", "Premium", "Production", "Internal", "Measured", "U-1008", 205.6, 1966.14},
+				            {148, #date(2026,7,30), "W7", "Sales", "Unattributed", "OpenAI", "GPT-4o", "Cached", "Standard", "Production", "Client-Facing", "Modeled", "Unattributed", 229.2, 1407.57},
+				            {149, #date(2026,7,30), "W7", "Corporate", "Compliance Helper", "OpenAI", "GPT-4o", "Fine-tune", "Standard", "Production", "Internal", "Measured", "U-1010", 241.0, 3901.78},
+				            {150, #date(2026,7,30), "W7", "Operations", "Code Assistant", "Mistral", "Mistral Large", "Cached", "Premium", "Production", "Client-Facing", "Measured", "Unattributed", 212.7, 1587.24},
+				            {151, #date(2026,7,30), "W7", "Finance", "Research Copilot", "Google", "Gemini 2.5 Pro", "Input", "Standard", "Production", "Internal", "Estimated", "U-1005", 154.7, 1191.9},
+				            {152, #date(2026,7,30), "W7", "Sales", "Support Assistant", "Google", "Gemini 2.5 Pro", "Input", "Standard", "Production", "Internal", "Measured", "U-1001", 152.2, 1205.39},
+				            {153, #date(2026,7,30), "W7", "Operations", "Code Assistant", "Anthropic", "Claude Opus 4.5", "Input", "Enterprise", "Production", "Client-Facing", "Measured", "U-1007", 160.8, 2023.67},
+				            {154, #date(2026,7,30), "W7", "Sales", "Support Assistant", "Mistral", "Mistral Large", "Fine-tune", "Premium", "Staging", "Client-Facing", "Modeled", "Unattributed", 157.0, 3299.59},
+				            {155, #date(2026,7,30), "W7", "Sales", "Support Assistant", "Google", "Gemini 2.5 Pro", "Input", "Standard", "Production", "Internal", "Measured", "U-1010", 214.4, 1665.85},
+				            {156, #date(2026,7,30), "W7", "Product", "Unattributed", "Mistral", "Mistral Large", "Input", "Standard", "Production", "Client-Facing", "Unknown", "Unattributed", 193.6, 1543.73},
+				            {157, #date(2026,7,30), "W7", "Corporate", "Compliance Helper", "Anthropic", "Claude Opus 4.5", "Fine-tune", "Premium", "Production", "Internal", "Measured", "Unattributed", 153.2, 3296.95},
+				            {158, #date(2026,7,30), "W7", "Corporate", "Compliance Helper", "OpenAI", "GPT-4o", "Input", "Enterprise", "Production", "Internal", "Measured", "U-1006", 249.3, 3062.8},
+				            {159, #date(2026,7,30), "W7", "Product", "Insights Bot", "Mistral", "Mistral Large", "Input", "Enterprise", "Production", "Client-Facing", "Estimated", "U-1011", 199.1, 2325.68},
+				            {160, #date(2026,7,30), "W7", "Unattributed", "Unattributed", "OpenAI", "GPT-4o", "Input", "Premium", "Sandbox", "Internal", "Modeled", "Unattributed", 237.0, 2420.16},
+				            {161, #date(2026,7,30), "W7", "Operations", "Code Assistant", "Mistral", "Mistral Large", "Output", "Premium", "Staging", "Internal", "Measured", "U-1002", 178.0, 3385.46},
+				            {162, #date(2026,7,30), "W7", "Product", "Insights Bot", "Mistral", "Mistral Large", "Output", "Standard", "Production", "Internal", "Estimated", "U-1002", 237.0, 3723.05},
+				            {163, #date(2026,7,30), "W7", "Sales", "Support Assistant", "Google", "Gemini 2.5 Pro", "Output", "Standard", "Production", "Internal", "Measured", "U-1002", 236.5, 3665.94},
+				            {164, #date(2026,7,30), "W7", "Corporate", "Compliance Helper", "Mistral", "Mistral Large", "Input", "Premium", "Production", "Client-Facing", "Measured", "U-1004", 157.2, 1648.69},
+				            {165, #date(2026,7,30), "W7", "Operations", "Code Assistant", "Anthropic", "Claude Opus 4.5", "Fine-tune", "Standard", "Staging", "Client-Facing", "Measured", "U-1011", 234.5, 4164.27},
+				            {166, #date(2026,7,30), "W7", "Sales", "Unattributed", "Anthropic", "Claude Opus 4.5", "Output", "Standard", "Production", "Internal", "Modeled", "Unattributed", 177.8, 2602.62},
+				            {167, #date(2026,7,30), "W7", "Corporate", "Compliance Helper", "Google", "Gemini 2.5 Pro", "Cached", "Standard", "Sandbox", "Client-Facing", "Estimated", "U-1005", 223.6, 1322.86},
+				            {168, #date(2026,7,30), "W7", "Sales", "Support Assistant", "Anthropic", "Claude Opus 4.5", "Input", "Premium", "Production", "Client-Facing", "Measured", "Unattributed", 190.9, 1900.75},
+				            {169, #date(2026,8,6), "W8", "Operations", "Unattributed", "Google", "Gemini 2.5 Pro", "Input", "Premium", "Staging", "Internal", "Unknown", "Unattributed", 204.6, 1964.04},
+				            {170, #date(2026,8,6), "W8", "Finance", "Research Copilot", "Google", "Gemini 2.5 Pro", "Input", "Standard", "Production", "Client-Facing", "Measured", "U-1001", 184.4, 1533.9},
+				            {171, #date(2026,8,6), "W8", "Unattributed", "Unattributed", "Mistral", "Mistral Large", "Input", "Standard", "Production", "Internal", "Unknown", "Unattributed", 217.1, 1755.13},
+				            {172, #date(2026,8,6), "W8", "Finance", "Research Copilot", "Mistral", "Mistral Large", "Fine-tune", "Premium", "Production", "Client-Facing", "Measured", "U-1008", 249.8, 5078.16},
+				            {173, #date(2026,8,6), "W8", "Sales", "Support Assistant", "Anthropic", "Claude Opus 4.5", "Fine-tune", "Standard", "Production", "Internal", "Modeled", "U-1003", 224.2, 3652.67},
+				            {174, #date(2026,8,6), "W8", "Corporate", "Unattributed", "Google", "Gemini 2.5 Pro", "Fine-tune", "Premium", "Production", "Internal", "Unknown", "Unattributed", 151.6, 3337.37},
+				            {175, #date(2026,8,6), "W8", "Finance", "Research Copilot", "OpenAI", "GPT-4o", "Cached", "Standard", "Production", "Client-Facing", "Measured", "U-1009", 227.6, 1310.19},
+				            {176, #date(2026,8,6), "W8", "Finance", "Research Copilot", "Anthropic", "Claude Opus 4.5", "Output", "Premium", "Production", "Internal", "Measured", "U-1010", 185.3, 3386.09},
+				            {177, #date(2026,8,6), "W8", "Finance", "Research Copilot", "Anthropic", "Claude Opus 4.5", "Fine-tune", "Standard", "Production", "Internal", "Measured", "U-1009", 239.9, 4204.59},
+				            {178, #date(2026,8,6), "W8", "Corporate", "Compliance Helper", "Anthropic", "Claude Opus 4.5", "Fine-tune", "Premium", "Sandbox", "Client-Facing", "Measured", "Unattributed", 161.9, 3551.25},
+				            {179, #date(2026,8,6), "W8", "Finance", "Research Copilot", "Mistral", "Mistral Large", "Output", "Standard", "Production", "Internal", "Measured", "Unattributed", 199.3, 3112.69},
+				            {180, #date(2026,8,6), "W8", "Finance", "Research Copilot", "Mistral", "Mistral Large", "Fine-tune", "Standard", "Production", "Internal", "Measured", "U-1008", 215.7, 3637.28},
+				            {181, #date(2026,8,6), "W8", "Corporate", "Compliance Helper", "Anthropic", "Claude Opus 4.5", "Input", "Standard", "Production", "Client-Facing", "Estimated", "U-1007", 175.8, 1387.82},
+				            {182, #date(2026,8,6), "W8", "Product", "Insights Bot", "Google", "Gemini 2.5 Pro", "Fine-tune", "Standard", "Production", "Internal", "Measured", "U-1007", 203.1, 3336.43},
+				            {183, #date(2026,8,6), "W8", "Product", "Unattributed", "Anthropic", "Claude Opus 4.5", "Input", "Premium", "Production", "Internal", "Modeled", "Unattributed", 245.1, 2455.87},
+				            {184, #date(2026,8,6), "W8", "Finance", "Research Copilot", "Google", "Gemini 2.5 Pro", "Fine-tune", "Premium", "Production", "Client-Facing", "Estimated", "U-1010", 185.7, 3846.01},
+				            {185, #date(2026,8,6), "W8", "Operations", "Code Assistant", "Anthropic", "Claude Opus 4.5", "Input", "Standard", "Production", "Internal", "Measured", "U-1002", 225.4, 1722.6},
+				            {186, #date(2026,8,6), "W8", "Corporate", "Compliance Helper", "Google", "Gemini 2.5 Pro", "Fine-tune", "Premium", "Production", "Internal", "Unknown", "U-1007", 207.2, 4225.67},
+				            {187, #date(2026,8,6), "W8", "Operations", "Code Assistant", "Google", "Gemini 2.5 Pro", "Input", "Standard", "Staging", "Client-Facing", "Measured", "U-1008", 214.2, 1637.64},
+				            {188, #date(2026,8,6), "W8", "Corporate", "Compliance Helper", "OpenAI", "GPT-4o", "Output", "Enterprise", "Production", "Internal", "Measured", "Unattributed", 243.4, 5614.91},
+				            {189, #date(2026,8,6), "W8", "Finance", "Research Copilot", "Mistral", "Mistral Large", "Fine-tune", "Standard", "Production", "Client-Facing", "Measured", "U-1002", 232.1, 3816.47},
+				            {190, #date(2026,8,6), "W8", "Sales", "Support Assistant", "Mistral", "Mistral Large", "Fine-tune", "Premium", "Staging", "Internal", "Modeled", "U-1002", 239.7, 5209.6},
+				            {191, #date(2026,8,6), "W8", "Operations", "Code Assistant", "OpenAI", "GPT-4o", "Input", "Standard", "Production", "Client-Facing", "Measured", "Unattributed", 161.4, 1338.71},
+				            {192, #date(2026,8,6), "W8", "Operations", "Code Assistant", "Anthropic", "Claude Opus 4.5", "Input", "Standard", "Production", "Internal", "Measured", "U-1004", 239.7, 2000.15},
+				            {193, #date(2026,8,13), "W9", "Product", "Insights Bot", "OpenAI", "GPT-4o", "Output", "Enterprise", "Staging", "Internal", "Measured", "U-1010", 198.7, 4350.63},
+				            {194, #date(2026,8,13), "W9", "Operations", "Unattributed", "Anthropic", "Claude Opus 4.5", "Input", "Enterprise", "Production", "Internal", "Modeled", "Unattributed", 199.0, 2385.51},
+				            {195, #date(2026,8,13), "W9", "Operations", "Code Assistant", "Google", "Gemini 2.5 Pro", "Input", "Standard", "Production", "Client-Facing", "Measured", "U-1006", 236.1, 1933.67},
+				            {196, #date(2026,8,13), "W9", "Sales", "Support Assistant", "Anthropic", "Claude Opus 4.5", "Cached", "Premium", "Production", "Client-Facing", "Estimated", "Unattributed", 221.9, 1629.45},
+				            {197, #date(2026,8,13), "W9", "Operations", "Code Assistant", "OpenAI", "GPT-4o", "Output", "Standard", "Production", "Client-Facing", "Measured", "U-1009", 216.8, 3182.56},
+				            {198, #date(2026,8,13), "W9", "Product", "Insights Bot", "OpenAI", "GPT-4o", "Cached", "Standard", "Production", "Client-Facing", "Estimated", "U-1009", 165.2, 980.26},
+				            {199, #date(2026,8,13), "W9", "Corporate", "Compliance Helper", "OpenAI", "GPT-4o", "Output", "Premium", "Production", "Client-Facing", "Measured", "U-1001", 227.5, 4163.19},
+				            {200, #date(2026,8,13), "W9", "Operations", "Code Assistant", "Anthropic", "Claude Opus 4.5", "Fine-tune", "Standard", "Production", "Client-Facing", "Estimated", "U-1010", 244.4, 4157.15},
+				            {201, #date(2026,8,13), "W9", "Sales", "Support Assistant", "OpenAI", "GPT-4o", "Input", "Premium", "Staging", "Client-Facing", "Modeled", "U-1010", 180.2, 1712.38},
+				            {202, #date(2026,8,13), "W9", "Sales", "Support Assistant", "Google", "Gemini 2.5 Pro", "Cached", "Standard", "Production", "Client-Facing", "Measured", "Unattributed", 216.5, 1252.33},
+				            {203, #date(2026,8,13), "W9", "Sales", "Support Assistant", "OpenAI", "GPT-4o", "Fine-tune", "Premium", "Production", "Internal", "Estimated", "U-1004", 185.4, 3939.35},
+				            {204, #date(2026,8,13), "W9", "Unattributed", "Unattributed", "Mistral", "Mistral Large", "Output", "Standard", "Production", "Internal", "Unknown", "Unattributed", 205.8, 3232.87},
+				            {205, #date(2026,8,13), "W9", "Sales", "Support Assistant", "Google", "Gemini 2.5 Pro", "Cached", "Standard", "Production", "Client-Facing", "Estimated", "U-1003", 247.6, 1552.44},
+				            {206, #date(2026,8,13), "W9", "Finance", "Research Copilot", "Mistral", "Mistral Large", "Cached", "Enterprise", "Production", "Internal", "Measured", "U-1002", 245.9, 2109.49},
+				            {207, #date(2026,8,13), "W9", "Operations", "Code Assistant", "OpenAI", "GPT-4o", "Fine-tune", "Standard", "Staging", "Client-Facing", "Estimated", "U-1011", 202.0, 3461.5},
+				            {208, #date(2026,8,13), "W9", "Finance", "Research Copilot", "Google", "Gemini 2.5 Pro", "Input", "Enterprise", "Production", "Internal", "Measured", "U-1004", 173.2, 2047.34},
+				            {209, #date(2026,8,13), "W9", "Finance", "Research Copilot", "Anthropic", "Claude Opus 4.5", "Cached", "Standard", "Production", "Client-Facing", "Measured", "Unattributed", 202.1, 1194.64},
+				            {210, #date(2026,8,13), "W9", "Product", "Insights Bot", "Anthropic", "Claude Opus 4.5", "Output", "Standard", "Production", "Internal", "Measured", "U-1004", 228.4, 3368.75},
+				            {211, #date(2026,8,13), "W9", "Corporate", "Compliance Helper", "Google", "Gemini 2.5 Pro", "Cached", "Premium", "Production", "Internal", "Estimated", "U-1012", 156.6, 1175.64},
+				            {212, #date(2026,8,13), "W9", "Finance", "Research Copilot", "Anthropic", "Claude Opus 4.5", "Input", "Standard", "Production", "Internal", "Measured", "U-1003", 171.8, 1362.63},
+				            {213, #date(2026,8,13), "W9", "Operations", "Code Assistant", "OpenAI", "GPT-4o", "Input", "Enterprise", "Production", "Internal", "Unknown", "U-1006", 229.0, 2825.58},
+				            {214, #date(2026,8,13), "W9", "Sales", "Unattributed", "Mistral", "Mistral Large", "Cached", "Premium", "Staging", "Internal", "Estimated", "Unattributed", 247.4, 1931.92},
+				            {215, #date(2026,8,13), "W9", "Finance", "Research Copilot", "Mistral", "Mistral Large", "Input", "Standard", "Production", "Internal", "Modeled", "U-1004", 166.0, 1327.05},
+				            {216, #date(2026,8,13), "W9", "Operations", "Code Assistant", "Anthropic", "Claude Opus 4.5", "Output", "Standard", "Production", "Client-Facing", "Measured", "Unattributed", 169.3, 2446.99},
+				            {217, #date(2026,8,20), "W10", "Operations", "Code Assistant", "Mistral", "Mistral Large", "Fine-tune", "Standard", "Production", "Internal", "Measured", "U-1010", 217.8, 3679.98},
+				            {218, #date(2026,8,20), "W10", "Finance", "Research Copilot", "Google", "Gemini 2.5 Pro", "Output", "Standard", "Production", "Client-Facing", "Measured", "Unattributed", 246.1, 3515.88},
+				            {219, #date(2026,8,20), "W10", "Product", "Insights Bot", "OpenAI", "GPT-4o", "Fine-tune", "Standard", "Production", "Internal", "Measured", "U-1010", 247.2, 4133.73},
+				            {220, #date(2026,8,20), "W10", "Product", "Insights Bot", "Google", "Gemini 2.5 Pro", "Cached", "Standard", "Production", "Internal", "Measured", "U-1010", 211.2, 1258.28},
+				            {221, #date(2026,8,20), "W10", "Operations", "Code Assistant", "Mistral", "Mistral Large", "Output", "Premium", "Production", "Client-Facing", "Unknown", "U-1009", 215.8, 4033.45},
+				            {222, #date(2026,8,20), "W10", "Operations", "Code Assistant", "Anthropic", "Claude Opus 4.5", "Cached", "Standard", "Production", "Internal", "Measured", "U-1002", 244.7, 1436.49},
+				            {223, #date(2026,8,20), "W10", "Finance", "Unattributed", "Google", "Gemini 2.5 Pro", "Fine-tune", "Premium", "Production", "Client-Facing", "Measured", "Unattributed", 201.4, 4227.94},
+				            {224, #date(2026,8,20), "W10", "Unattributed", "Unattributed", "Mistral", "Mistral Large", "Cached", "Standard", "Staging", "Internal", "Unknown", "Unattributed", 155.6, 916.75},
+				            {225, #date(2026,8,20), "W10", "Finance", "Research Copilot", "Anthropic", "Claude Opus 4.5", "Input", "Standard", "Production", "Internal", "Estimated", "Unattributed", 230.0, 1791.14},
+				            {226, #date(2026,8,20), "W10", "Finance", "Research Copilot", "Google", "Gemini 2.5 Pro", "Output", "Enterprise", "Production", "Internal", "Measured", "Unattributed", 205.5, 4829.92},
+				            {227, #date(2026,8,20), "W10", "Product", "Insights Bot", "Anthropic", "Claude Opus 4.5", "Cached", "Standard", "Production", "Internal", "Estimated", "U-1012", 242.6, 1476.94},
+				            {228, #date(2026,8,20), "W10", "Operations", "Code Assistant", "Anthropic", "Claude Opus 4.5", "Output", "Premium", "Production", "Client-Facing", "Measured", "U-1008", 230.1, 4174.69},
+				            {229, #date(2026,8,20), "W10", "Sales", "Support Assistant", "OpenAI", "GPT-4o", "Input", "Enterprise", "Production", "Internal", "Modeled", "U-1007", 214.4, 2617.93},
+				            {230, #date(2026,8,20), "W10", "Finance", "Research Copilot", "Anthropic", "Claude Opus 4.5", "Input", "Standard", "Production", "Internal", "Unknown", "U-1005", 175.4, 1418.69},
+				            {231, #date(2026,8,20), "W10", "Corporate", "Compliance Helper", "Anthropic", "Claude Opus 4.5", "Input", "Standard", "Production", "Internal", "Modeled", "U-1005", 225.2, 1711.97},
+				            {232, #date(2026,8,20), "W10", "Product", "Insights Bot", "Anthropic", "Claude Opus 4.5", "Fine-tune", "Premium", "Production", "Client-Facing", "Measured", "Unattributed", 200.0, 4453.67},
+				            {233, #date(2026,8,20), "W10", "Corporate", "Compliance Helper", "OpenAI", "GPT-4o", "Output", "Premium", "Production", "Internal", "Estimated", "U-1011", 168.7, 3209.89},
+				            {234, #date(2026,8,20), "W10", "Finance", "Research Copilot", "Google", "Gemini 2.5 Pro", "Cached", "Enterprise", "Staging", "Internal", "Estimated", "U-1008", 245.2, 2233.14},
+				            {235, #date(2026,8,20), "W10", "Operations", "Unattributed", "OpenAI", "GPT-4o", "Cached", "Standard", "Sandbox", "Internal", "Estimated", "Unattributed", 159.7, 977.85},
+				            {236, #date(2026,8,20), "W10", "Corporate", "Compliance Helper", "Anthropic", "Claude Opus 4.5", "Cached", "Standard", "Production", "Internal", "Modeled", "U-1001", 182.8, 1049.63},
+				            {237, #date(2026,8,20), "W10", "Operations", "Code Assistant", "Mistral", "Mistral Large", "Output", "Standard", "Production", "Internal", "Measured", "U-1007", 245.9, 3549.06},
+				            {238, #date(2026,8,20), "W10", "Product", "Insights Bot", "Google", "Gemini 2.5 Pro", "Fine-tune", "Enterprise", "Production", "Internal", "Measured", "U-1003", 226.6, 5522.3},
+				            {239, #date(2026,8,20), "W10", "Operations", "Code Assistant", "Google", "Gemini 2.5 Pro", "Cached", "Premium", "Production", "Client-Facing", "Modeled", "U-1002", 195.7, 1457.84},
+				            {240, #date(2026,8,20), "W10", "Sales", "Support Assistant", "Google", "Gemini 2.5 Pro", "Input", "Premium", "Production", "Internal", "Measured", "U-1007", 211.5, 2192.92},
+				            {241, #date(2026,8,27), "W11", "Operations", "Code Assistant", "Mistral", "Mistral Large", "Output", "Standard", "Production", "Client-Facing", "Measured", "U-1002", 191.1, 2810.23},
+				            {242, #date(2026,8,27), "W11", "Product", "Insights Bot", "Mistral", "Mistral Large", "Fine-tune", "Premium", "Production", "Client-Facing", "Estimated", "U-1002", 243.0, 5363.13},
+				            {243, #date(2026,8,27), "W11", "Operations", "Code Assistant", "Anthropic", "Claude Opus 4.5", "Fine-tune", "Standard", "Production", "Internal", "Measured", "U-1012", 227.0, 3874.11},
+				            {244, #date(2026,8,27), "W11", "Product", "Insights Bot", "OpenAI", "GPT-4o", "Fine-tune", "Standard", "Production", "Internal", "Unknown", "U-1005", 188.0, 3312.27},
+				            {245, #date(2026,8,27), "W11", "Sales", "Support Assistant", "Mistral", "Mistral Large", "Input", "Standard", "Production", "Internal", "Modeled", "Unattributed", 215.2, 1646.98},
+				            {246, #date(2026,8,27), "W11", "Operations", "Code Assistant", "Google", "Gemini 2.5 Pro", "Fine-tune", "Standard", "Production", "Internal", "Estimated", "U-1003", 204.4, 3644.05},
+				            {247, #date(2026,8,27), "W11", "Corporate", "Compliance Helper", "Google", "Gemini 2.5 Pro", "Input", "Standard", "Production", "Internal", "Measured", "Unattributed", 199.5, 1542.86},
+				            {248, #date(2026,8,27), "W11", "Product", "Insights Bot", "Mistral", "Mistral Large", "Cached", "Enterprise", "Sandbox", "Client-Facing", "Measured", "U-1008", 159.8, 1373.22},
+				            {249, #date(2026,8,27), "W11", "Product", "Insights Bot", "OpenAI", "GPT-4o", "Cached", "Standard", "Production", "Internal", "Estimated", "Unattributed", 180.0, 1100.73},
+				            {250, #date(2026,8,27), "W11", "Sales", "Support Assistant", "Mistral", "Mistral Large", "Cached", "Standard", "Production", "Internal", "Measured", "U-1007", 203.9, 1210.9},
+				            {251, #date(2026,8,27), "W11", "Operations", "Code Assistant", "Anthropic", "Claude Opus 4.5", "Output", "Standard", "Production", "Internal", "Measured", "U-1005", 229.4, 3523.24},
+				            {252, #date(2026,8,27), "W11", "Unattributed", "Unattributed", "OpenAI", "GPT-4o", "Cached", "Enterprise", "Production", "Client-Facing", "Unknown", "Unattributed", 219.9, 1946.85},
+				            {253, #date(2026,8,27), "W11", "Sales", "Support Assistant", "Mistral", "Mistral Large", "Cached", "Standard", "Staging", "Client-Facing", "Measured", "U-1006", 178.1, 1069.16},
+				            {254, #date(2026,8,27), "W11", "Sales", "Support Assistant", "Google", "Gemini 2.5 Pro", "Output", "Premium", "Staging", "Client-Facing", "Modeled", "U-1003", 238.7, 4330.45},
+				            {255, #date(2026,8,27), "W11", "Sales", "Support Assistant", "Mistral", "Mistral Large", "Cached", "Premium", "Production", "Client-Facing", "Measured", "U-1008", 181.9, 1412.55},
+				            {256, #date(2026,8,27), "W11", "Sales", "Unattributed", "Mistral", "Mistral Large", "Input", "Enterprise", "Production", "Client-Facing", "Measured", "Unattributed", 218.0, 2731.38},
+				            {257, #date(2026,8,27), "W11", "Operations", "Unattributed", "OpenAI", "GPT-4o", "Cached", "Premium", "Production", "Internal", "Modeled", "Unattributed", 188.7, 1456.72},
+				            {258, #date(2026,8,27), "W11", "Corporate", "Compliance Helper", "Anthropic", "Claude Opus 4.5", "Cached", "Standard", "Production", "Client-Facing", "Measured", "Unattributed", 155.4, 958.46},
+				            {259, #date(2026,8,27), "W11", "Finance", "Research Copilot", "Google", "Gemini 2.5 Pro", "Output", "Standard", "Production", "Internal", "Measured", "U-1005", 176.1, 2513.71},
+				            {260, #date(2026,8,27), "W11", "Sales", "Support Assistant", "Google", "Gemini 2.5 Pro", "Output", "Standard", "Staging", "Internal", "Estimated", "U-1010", 201.2, 2961.23},
+				            {261, #date(2026,8,27), "W11", "Product", "Insights Bot", "Anthropic", "Claude Opus 4.5", "Fine-tune", "Premium", "Production", "Internal", "Measured", "U-1004", 194.4, 4162.11},
+				            {262, #date(2026,8,27), "W11", "Operations", "Code Assistant", "Google", "Gemini 2.5 Pro", "Fine-tune", "Standard", "Production", "Client-Facing", "Estimated", "U-1009", 178.6, 2942.46},
+				            {263, #date(2026,8,27), "W11", "Operations", "Code Assistant", "Mistral", "Mistral Large", "Input", "Standard", "Production", "Client-Facing", "Measured", "U-1004", 249.1, 2075.9},
+				            {264, #date(2026,8,27), "W11", "Sales", "Support Assistant", "Google", "Gemini 2.5 Pro", "Fine-tune", "Premium", "Production", "Client-Facing", "Measured", "U-1002", 201.7, 4496.29},
+				            {265, #date(2026,9,3), "W12", "Finance", "Research Copilot", "Anthropic", "Claude Opus 4.5", "Output", "Premium", "Production", "Client-Facing", "Estimated", "U-1005", 214.5, 4216.71},
+				            {266, #date(2026,9,3), "W12", "Sales", "Support Assistant", "Google", "Gemini 2.5 Pro", "Input", "Premium", "Staging", "Internal", "Measured", "U-1011", 206.3, 2038.83},
+				            {267, #date(2026,9,3), "W12", "Sales", "Support Assistant", "Mistral", "Mistral Large", "Fine-tune", "Premium", "Production", "Internal", "Measured", "U-1002", 177.0, 3648.41},
+				            {268, #date(2026,9,3), "W12", "Sales", "Support Assistant", "Anthropic", "Claude Opus 4.5", "Fine-tune", "Standard", "Staging", "Client-Facing", "Measured", "Unattributed", 248.0, 4287.54},
+				            {269, #date(2026,9,3), "W12", "Product", "Insights Bot", "Google", "Gemini 2.5 Pro", "Fine-tune", "Standard", "Production", "Internal", "Measured", "U-1002", 162.2, 2689.41},
+				            {270, #date(2026,9,3), "W12", "Corporate", "Compliance Helper", "Google", "Gemini 2.5 Pro", "Cached", "Standard", "Staging", "Client-Facing", "Measured", "U-1001", 210.8, 1227.35},
+				            {271, #date(2026,9,3), "W12", "Corporate", "Unattributed", "Anthropic", "Claude Opus 4.5", "Fine-tune", "Standard", "Production", "Internal", "Estimated", "Unattributed", 236.5, 3832.93},
+				            {272, #date(2026,9,3), "W12", "Product", "Insights Bot", "Anthropic", "Claude Opus 4.5", "Fine-tune", "Premium", "Production", "Client-Facing", "Measured", "U-1002", 222.2, 4510.04},
+				            {273, #date(2026,9,3), "W12", "Sales", "Support Assistant", "OpenAI", "GPT-4o", "Input", "Standard", "Production", "Internal", "Measured", "U-1006", 221.3, 1706.44},
+				            {274, #date(2026,9,3), "W12", "Finance", "Research Copilot", "OpenAI", "GPT-4o", "Output", "Standard", "Production", "Internal", "Measured", "Unattributed", 170.1, 2587.31},
+				            {275, #date(2026,9,3), "W12", "Sales", "Support Assistant", "Mistral", "Mistral Large", "Fine-tune", "Standard", "Production", "Internal", "Unknown", "U-1001", 188.8, 3201.35},
+				            {276, #date(2026,9,3), "W12", "Finance", "Research Copilot", "Anthropic", "Claude Opus 4.5", "Cached", "Enterprise", "Production", "Client-Facing", "Modeled", "U-1005", 235.2, 2072.28},
+				            {277, #date(2026,9,3), "W12", "Sales", "Support Assistant", "Anthropic", "Claude Opus 4.5", "Fine-tune", "Premium", "Staging", "Client-Facing", "Measured", "U-1005", 160.8, 3469.3},
+				            {278, #date(2026,9,3), "W12", "Operations", "Code Assistant", "Anthropic", "Claude Opus 4.5", "Input", "Premium", "Staging", "Internal", "Measured", "U-1005", 189.3, 1959.81},
+				            {279, #date(2026,9,3), "W12", "Finance", "Research Copilot", "Mistral", "Mistral Large", "Cached", "Premium", "Production", "Internal", "Measured", "Unattributed", 238.1, 1855.28},
+				            {280, #date(2026,9,3), "W12", "Sales", "Support Assistant", "Mistral", "Mistral Large", "Cached", "Enterprise", "Production", "Internal", "Measured", "U-1011", 206.4, 1789.17},
+				            {281, #date(2026,9,3), "W12", "Unattributed", "Unattributed", "Google", "Gemini 2.5 Pro", "Output", "Standard", "Production", "Internal", "Unknown", "Unattributed", 194.8, 3026.38},
+				            {282, #date(2026,9,3), "W12", "Operations", "Code Assistant", "Anthropic", "Claude Opus 4.5", "Cached", "Premium", "Production", "Internal", "Measured", "U-1010", 176.3, 1306.43},
+				            {283, #date(2026,9,3), "W12", "Finance", "Research Copilot", "OpenAI", "GPT-4o", "Input", "Premium", "Production", "Client-Facing", "Measured", "U-1001", 196.9, 1970.39},
+				            {284, #date(2026,9,3), "W12", "Sales", "Support Assistant", "Mistral", "Mistral Large", "Output", "Premium", "Staging", "Client-Facing", "Measured", "U-1007", 192.1, 3536.22},
+				            {285, #date(2026,9,3), "W12", "Product", "Insights Bot", "Anthropic", "Claude Opus 4.5", "Output", "Standard", "Production", "Client-Facing", "Estimated", "U-1009", 192.2, 2982.34},
+				            {286, #date(2026,9,3), "W12", "Corporate", "Compliance Helper", "Google", "Gemini 2.5 Pro", "Input", "Standard", "Staging", "Internal", "Measured", "U-1005", 217.6, 1698.35},
+				            {287, #date(2026,9,3), "W12", "Operations", "Unattributed", "OpenAI", "GPT-4o", "Input", "Premium", "Production", "Internal", "Estimated", "Unattributed", 153.0, 1478.23},
+				            {288, #date(2026,9,3), "W12", "Corporate", "Compliance Helper", "Google", "Gemini 2.5 Pro", "Output", "Standard", "Production", "Client-Facing", "Measured", "Unattributed", 241.9, 3582.36},
+				            {289, #date(2026,9,10), "W13", "Operations", "Code Assistant", "OpenAI", "GPT-4o", "Input", "Standard", "Production", "Internal", "Measured", "U-1003", 217.8, 1681.53},
+				            {290, #date(2026,9,10), "W13", "Finance", "Research Copilot", "Anthropic", "Claude Opus 4.5", "Output", "Standard", "Production", "Internal", "Measured", "Unattributed", 238.8, 3479.28},
+				            {291, #date(2026,9,10), "W13", "Sales", "Support Assistant", "Mistral", "Mistral Large", "Output", "Standard", "Production", "Client-Facing", "Measured", "U-1011", 224.9, 3226.55},
+				            {292, #date(2026,9,10), "W13", "Operations", "Code Assistant", "Mistral", "Mistral Large", "Output", "Premium", "Production", "Client-Facing", "Measured", "U-1002", 183.5, 3318.11},
+				            {293, #date(2026,9,10), "W13", "Finance", "Research Copilot", "Google", "Gemini 2.5 Pro", "Fine-tune", "Standard", "Staging", "Client-Facing", "Measured", "U-1003", 232.9, 4122.12},
+				            {294, #date(2026,9,10), "W13", "Operations", "Code Assistant", "Google", "Gemini 2.5 Pro", "Fine-tune", "Standard", "Production", "Internal", "Measured", "Unattributed", 242.4, 4305.72},
+				            {295, #date(2026,9,10), "W13", "Operations", "Code Assistant", "OpenAI", "GPT-4o", "Fine-tune", "Enterprise", "Production", "Internal", "Measured", "U-1009", 200.4, 4926.2},
+				            {296, #date(2026,9,10), "W13", "Corporate", "Compliance Helper", "Google", "Gemini 2.5 Pro", "Output", "Standard", "Production", "Client-Facing", "Measured", "U-1004", 209.5, 3067.88},
+				            {297, #date(2026,9,10), "W13", "Product", "Insights Bot", "Anthropic", "Claude Opus 4.5", "Fine-tune", "Standard", "Production", "Internal", "Measured", "U-1011", 174.3, 2939.72},
+				            {298, #date(2026,9,10), "W13", "Sales", "Support Assistant", "Google", "Gemini 2.5 Pro", "Input", "Standard", "Sandbox", "Client-Facing", "Measured", "Unattributed", 162.9, 1329.61},
+				            {299, #date(2026,9,10), "W13", "Corporate", "Compliance Helper", "Mistral", "Mistral Large", "Fine-tune", "Standard", "Sandbox", "Client-Facing", "Measured", "Unattributed", 228.2, 3733.27},
+				            {300, #date(2026,9,10), "W13", "Product", "Insights Bot", "Google", "Gemini 2.5 Pro", "Cached", "Premium", "Production", "Client-Facing", "Measured", "U-1005", 188.6, 1434.68},
+				            {301, #date(2026,9,10), "W13", "Corporate", "Compliance Helper", "OpenAI", "GPT-4o", "Output", "Enterprise", "Production", "Internal", "Measured", "U-1011", 161.7, 3508.07},
+				            {302, #date(2026,9,10), "W13", "Finance", "Research Copilot", "Google", "Gemini 2.5 Pro", "Fine-tune", "Standard", "Staging", "Internal", "Modeled", "U-1005", 197.3, 3254.03},
+				            {303, #date(2026,9,10), "W13", "Operations", "Code Assistant", "Google", "Gemini 2.5 Pro", "Fine-tune", "Standard", "Production", "Client-Facing", "Measured", "U-1002", 182.6, 3008.44},
+				            {304, #date(2026,9,10), "W13", "Finance", "Unattributed", "OpenAI", "GPT-4o", "Output", "Standard", "Production", "Internal", "Modeled", "Unattributed", 153.5, 2284.31},
+				            {305, #date(2026,9,10), "W13", "Sales", "Support Assistant", "Google", "Gemini 2.5 Pro", "Input", "Standard", "Staging", "Internal", "Measured", "U-1002", 205.7, 1579.33},
+				            {306, #date(2026,9,10), "W13", "Corporate", "Compliance Helper", "Anthropic", "Claude Opus 4.5", "Cached", "Enterprise", "Production", "Client-Facing", "Measured", "U-1011", 245.7, 2268.34},
+				            {307, #date(2026,9,10), "W13", "Sales", "Support Assistant", "Google", "Gemini 2.5 Pro", "Input", "Standard", "Production", "Internal", "Measured", "U-1012", 201.5, 1646.36},
+				            {308, #date(2026,9,10), "W13", "Product", "Insights Bot", "OpenAI", "GPT-4o", "Output", "Premium", "Staging", "Client-Facing", "Measured", "U-1003", 227.8, 4106.32},
+				            {309, #date(2026,9,10), "W13", "Corporate", "Compliance Helper", "Google", "Gemini 2.5 Pro", "Cached", "Standard", "Production", "Internal", "Measured", "U-1004", 199.2, 1180.64},
+				            {310, #date(2026,9,10), "W13", "Unattributed", "Unattributed", "Anthropic", "Claude Opus 4.5", "Fine-tune", "Standard", "Production", "Internal", "Modeled", "Unattributed", 154.2, 2505.92},
+				            {311, #date(2026,9,10), "W13", "Corporate", "Unattributed", "Anthropic", "Claude Opus 4.5", "Output", "Premium", "Production", "Internal", "Modeled", "Unattributed", 246.1, 4482.25},
+				            {312, #date(2026,9,10), "W13", "Sales", "Support Assistant", "Mistral", "Mistral Large", "Fine-tune", "Standard", "Production", "Client-Facing", "Measured", "U-1002", 243.7, 4022.19}
+				        }
+				    )
+				in
+				    Source
+

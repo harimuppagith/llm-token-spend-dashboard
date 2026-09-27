@@ -1,0 +1,27 @@
+table DimDivision
+	lineageTag: 81fe4cc9-eaa9-4d58-95b8-d091d05cd030
+
+	column Division
+		dataType: string
+		lineageTag: f9f9827c-3778-4bed-9036-87337b72f92c
+		summarizeBy: none
+		sourceColumn: Division
+
+	partition DimDivision = m
+		mode: import
+		source =
+				let
+					Source = #table(
+						{"Division"},
+						{
+							{"Finance"},
+							{"Sales"},
+							{"Operations"},
+							{"Product"},
+							{"Corporate"},
+							{"Unattributed"}
+						}
+					)
+				in
+					Source
+

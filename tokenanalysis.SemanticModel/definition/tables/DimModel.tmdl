@@ -1,0 +1,31 @@
+table DimModel
+	lineageTag: 43b1f84a-175e-4f33-b246-1f95a330f11b
+
+	column Model
+		dataType: string
+		lineageTag: a568a5dc-c368-4978-82dd-1cbdd3d645e8
+		summarizeBy: none
+		sourceColumn: Model
+
+	column HomePublisher
+		dataType: string
+		lineageTag: b06a04ef-19f9-4d47-95d1-6e94b102f641
+		summarizeBy: none
+		sourceColumn: HomePublisher
+
+	partition DimModel = m
+		mode: import
+		source =
+				let
+					Source = #table(
+						{"Model", "HomePublisher"},
+						{
+							{"GPT-4o", "OpenAI"},
+							{"Claude Opus 4.5", "Anthropic"},
+							{"Gemini 2.5 Pro", "Google"},
+							{"Mistral Large", "Mistral"}
+						}
+					)
+				in
+					Source
+

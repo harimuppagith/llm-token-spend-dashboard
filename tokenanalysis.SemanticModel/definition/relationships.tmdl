@@ -1,0 +1,44 @@
+relationship Rel_Fact_Date
+	fromColumn: FactTokenSpend.Date
+	toColumn: DimDate.Date
+
+relationship Rel_Fact_Division
+	fromColumn: FactTokenSpend.Division
+	toColumn: DimDivision.Division
+
+relationship Rel_Fact_Publisher
+	fromColumn: FactTokenSpend.Publisher
+	toColumn: DimPublisher.Publisher
+
+relationship Rel_Fact_Model
+	fromColumn: FactTokenSpend.Model
+	toColumn: DimModel.Model
+
+relationship Rel_Fact_TokenType
+	fromColumn: FactTokenSpend.TokenType
+	toColumn: DimTokenType.TokenType
+
+relationship Rel_Fact_Tier
+	fromColumn: FactTokenSpend.Tier
+	toColumn: DimTier.Tier
+
+relationship Rel_Fact_Environment
+	fromColumn: FactTokenSpend.Environment
+	toColumn: DimEnvironment.Environment
+
+relationship Rel_Fact_Audience
+	fromColumn: FactTokenSpend.Audience
+	toColumn: DimAudience.Audience
+
+relationship Rel_Fact_AttributionQuality
+	fromColumn: FactTokenSpend.AttributionQuality
+	toColumn: DimAttributionQuality.AttributionQuality
+
+relationship Rel_Fact_User
+	fromColumn: FactTokenSpend.User
+	toColumn: DimUser.User
+
+relationship 45a9ec1d-02ab-dcf5-6ace-01929890676e
+	fromColumn: FactTokenSpend.Application
+	toColumn: DimApplication.Application
+

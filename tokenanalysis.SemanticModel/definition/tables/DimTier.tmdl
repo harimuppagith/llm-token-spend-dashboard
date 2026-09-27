@@ -1,0 +1,24 @@
+table DimTier
+	lineageTag: b2d322fa-305f-4e0e-8462-b6ea217c774c
+
+	column Tier
+		dataType: string
+		lineageTag: 84492a0c-da4f-4bf2-adbd-b8568d8c388a
+		summarizeBy: none
+		sourceColumn: Tier
+
+	partition DimTier = m
+		mode: import
+		source =
+				let
+					Source = #table(
+						{"Tier"},
+						{
+							{"Standard"},
+							{"Premium"},
+							{"Enterprise"}
+						}
+					)
+				in
+					Source
+

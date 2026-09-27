@@ -1,0 +1,44 @@
+table DimAttributionQuality
+	lineageTag: 0c378afa-8b97-4a89-b27f-0638629a5da5
+
+	column AttributionQuality
+		dataType: string
+		lineageTag: b1c4220d-9a8d-48af-b6d3-5d284b1f07e6
+		summarizeBy: none
+		sourceColumn: AttributionQuality
+		sortByColumn: SortOrder
+
+	column SortOrder
+		dataType: string
+		isHidden
+		lineageTag: 4670fbd5-bea1-4f8c-b473-aa8c4af7f2ff
+		summarizeBy: none
+		sourceColumn: SortOrder
+
+		annotation SummarizationSetBy = Automatic
+
+	column IsModeled
+		dataType: string
+		isHidden
+		lineageTag: 593ec92c-2eef-42be-b777-66d0b67b2f69
+		summarizeBy: none
+		sourceColumn: IsModeled
+
+		annotation SummarizationSetBy = Automatic
+
+	partition DimAttributionQuality = m
+		mode: import
+		source =
+				let
+					Source = #table(
+						{"AttributionQuality", "SortOrder", "IsModeled"},
+						{
+							{"Measured", 1, false},
+							{"Estimated", 2, false},
+							{"Modeled", 3, true},
+							{"Unknown", 4, false}
+						}
+					)
+				in
+					Source
+

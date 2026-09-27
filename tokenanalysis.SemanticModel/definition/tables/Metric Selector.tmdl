@@ -1,0 +1,51 @@
+table 'Metric Selector'
+	lineageTag: 5b987bb5-fa51-46c0-9255-2db0485b20eb
+
+	column 'Metric Selector'
+		lineageTag: fe514e5f-4e03-4268-8f71-f5e218c505e1
+		summarizeBy: none
+		sourceColumn: [Value1]
+		sortByColumn: 'Metric Selector Order'
+
+		relatedColumnDetails
+			groupByColumn: 'Metric Selector Fields'
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Metric Selector Fields'
+		isHidden
+		lineageTag: c0e90d5d-58e0-423f-ab3c-93861323a5ba
+		summarizeBy: none
+		sourceColumn: [Value2]
+		sortByColumn: 'Metric Selector Order'
+
+		extendedProperty ParameterMetadata =
+				{
+				  "version": 3,
+				  "kind": 2
+				}
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Metric Selector Order'
+		isHidden
+		formatString: 0
+		lineageTag: 2dbd4ce5-42cf-4470-a3eb-8861bb09ef66
+		summarizeBy: sum
+		sourceColumn: [Value3]
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'Metric Selector' = calculated
+		mode: import
+		source =
+				{
+				    ("Total Spend", NAMEOF('FactTokenSpend'[Total  Spend.]), 0),
+				    ("Application Coverage %", NAMEOF('FactTokenSpend'[Application Coverage %]), 1),
+				    ("Ambiguous Cost", NAMEOF('FactTokenSpend'[Ambiguous Cost]), 2),
+				    ("Ambiguous Cost %", NAMEOF('FactTokenSpend'[Ambiguous Cost %]), 3),
+				    ("Cost per 1K Tokens", NAMEOF('FactTokenSpend'[Cost per 1K Tokens]), 4)
+				}
+
+	annotation PBI_Id = f9af706ae7794d0387f874d29530b299
+

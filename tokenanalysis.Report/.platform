@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "Report",
+    "displayName": "tokenanalysis"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "db5f22b4-ae80-4f71-9dea-f573be8ad859"
+  }
+}

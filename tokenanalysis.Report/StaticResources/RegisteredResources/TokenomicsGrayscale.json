@@ -1,0 +1,43 @@
+{
+  "name": "TokenomicsGrayscale",
+  "dataColors": [
+    "#1F2937",
+    "#4B5563",
+    "#6B7280",
+    "#9CA3AF",
+    "#D1D5DB",
+    "#374151",
+    "#111827",
+    "#E5E7EB",
+    "#9CA3AF",
+    "#F3F4F6"
+  ],
+  "background": "#F5F6F8",
+  "foreground": "#1F2937",
+  "tableAccent": "#1F2937",
+  "good": "#4B5563",
+  "neutral": "#9CA3AF",
+  "bad": "#6B7280",
+  "textClasses": {
+    "title": {
+      "fontFace": "Manrope",
+      "fontSize": 12,
+      "color": "#1F2937"
+    },
+    "header": {
+      "fontFace": "IBM Plex Sans",
+      "fontSize": 10,
+      "color": "#4B5563"
+    },
+    "label": {
+      "fontFace": "IBM Plex Sans",
+      "fontSize": 9,
+      "color": "#4B5563"
+    },
+    "callout": {
+      "fontFace": "IBM Plex Mono",
+      "fontSize": 28,
+      "color": "#1F2937"
+    }
+  }
+}

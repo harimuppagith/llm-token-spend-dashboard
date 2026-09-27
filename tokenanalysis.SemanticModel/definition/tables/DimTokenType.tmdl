@@ -1,0 +1,25 @@
+table DimTokenType
+	lineageTag: dd859f5e-b8cb-47b8-9cd3-1dab420156e6
+
+	column TokenType
+		dataType: string
+		lineageTag: bdba990d-4d1b-4e04-a999-209c848b8565
+		summarizeBy: none
+		sourceColumn: TokenType
+
+	partition DimTokenType = m
+		mode: import
+		source =
+				let
+					Source = #table(
+						{"TokenType"},
+						{
+							{"Input"},
+							{"Output"},
+							{"Cached"},
+							{"Fine-tune"}
+						}
+					)
+				in
+					Source
+

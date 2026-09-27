@@ -1,0 +1,33 @@
+table DimApplication
+	lineageTag: 9b23901a-1e8f-4cde-81dc-22653d38cc01
+
+	column Application
+		dataType: string
+		lineageTag: 97729a45-9b37-4618-ab4f-034e11c70516
+		summarizeBy: none
+		sourceColumn: Application
+
+	column HomeDivision
+		dataType: string
+		lineageTag: 5473abc8-4cc8-4a3d-a66b-f6845aef1c21
+		summarizeBy: none
+		sourceColumn: HomeDivision
+
+	partition DimApplication = m
+		mode: import
+		source =
+				let
+					Source = #table(
+						{"Application", "HomeDivision"},
+						{
+							{"Research Copilot", "Finance"},
+							{"Support Assistant", "Sales"},
+							{"Code Assistant", "Operations"},
+							{"Insights Bot", "Product"},
+							{"Compliance Helper", "Corporate"},
+							{"Unattributed", "Unattributed"}
+						}
+					)
+				in
+					Source
+

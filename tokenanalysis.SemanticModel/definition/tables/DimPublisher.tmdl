@@ -1,0 +1,25 @@
+table DimPublisher
+	lineageTag: e70aff15-8787-4ca6-a808-01f9e8121046
+
+	column Publisher
+		dataType: string
+		lineageTag: 35855264-76fd-4983-9621-da123ca9f78a
+		summarizeBy: none
+		sourceColumn: Publisher
+
+	partition DimPublisher = m
+		mode: import
+		source =
+				let
+					Source = #table(
+						{"Publisher"},
+						{
+							{"OpenAI"},
+							{"Anthropic"},
+							{"Google"},
+							{"Mistral"}
+						}
+					)
+				in
+					Source
+

@@ -1,0 +1,23 @@
+table DimAudience
+	lineageTag: 37626439-3e81-4314-a100-7cb04b4063a0
+
+	column Audience
+		dataType: string
+		lineageTag: 3fc7290c-a8ca-4a70-9846-abab31586959
+		summarizeBy: none
+		sourceColumn: Audience
+
+	partition DimAudience = m
+		mode: import
+		source =
+				let
+					Source = #table(
+						{"Audience"},
+						{
+							{"Internal"},
+							{"Client-Facing"}
+						}
+					)
+				in
+					Source
+

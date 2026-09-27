@@ -1,0 +1,34 @@
+table DimUser
+	lineageTag: ddc442e0-c285-47c3-8104-7f54cc33adb0
+
+	column User
+		dataType: string
+		lineageTag: a07a4448-ac8f-4799-aa1e-d385d1a2c3cc
+		summarizeBy: none
+		sourceColumn: User
+
+	partition DimUser = m
+		mode: import
+		source =
+				let
+					Source = #table(
+						{"User"},
+						{
+							{"U-1001"},
+							{"U-1002"},
+							{"U-1003"},
+							{"U-1004"},
+							{"U-1005"},
+							{"U-1006"},
+							{"U-1007"},
+							{"U-1008"},
+							{"U-1009"},
+							{"U-1010"},
+							{"U-1011"},
+							{"U-1012"},
+							{"Unattributed"}
+						}
+					)
+				in
+					Source
+
